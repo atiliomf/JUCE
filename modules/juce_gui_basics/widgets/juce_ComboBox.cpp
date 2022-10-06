@@ -261,7 +261,7 @@ void ComboBox::setSelectedId (const int newItemId, const NotificationType notifi
     auto* item = getItemForId (newItemId);
     auto newItemText = item != nullptr ? item->text : String();
 
-    if (lastCurrentId != newItemId || label->getText() != newItemText)
+    if (canReselectSameItem || lastCurrentId != newItemId || label->getText() != newItemText)
     {
         label->setText (newItemText, dontSendNotification);
         lastCurrentId = newItemId;
@@ -553,33 +553,39 @@ void ComboBox::showPopup()
 //==============================================================================
 void ComboBox::mouseDown (const MouseEvent& e)
 {
-    beginDragAutoRepeat (300);
-
     isButtonDown = isEnabled() && ! e.mods.isPopupMenu();
-
+    
+	if (ignoreMouseDown) return;
+    
+    beginDragAutoRepeat (300);
+    
     if (isButtonDown && (e.eventComponent == this || ! label->isEditable()))
         showPopupIfNotActive();
 }
 
 void ComboBox::mouseDrag (const MouseEvent& e)
 {
+    if (ignoreMouseDrag) return;
+    
     beginDragAutoRepeat (50);
-
+    
     if (isButtonDown && e.mouseWasDraggedSinceMouseDown())
         showPopupIfNotActive();
 }
 
 void ComboBox::mouseUp (const MouseEvent& e2)
 {
-    if (isButtonDown)
+    if (ignoreMouseUp) return;
+    
+    if (isButtonDown) 
     {
         isButtonDown = false;
         repaint();
-
+        
         auto e = e2.getEventRelativeTo (this);
-
+        
         if (reallyContains (e.getPosition(), true)
-             && (e2.eventComponent == this || ! label->isEditable()))
+            && (e2.eventComponent == this || ! label->isEditable()))
         {
             showPopupIfNotActive();
         }
@@ -651,6 +657,7 @@ void ComboBox::clear (const bool dontSendChange)                                
 void ComboBox::setSelectedItemIndex (const int index, const bool dontSendChange) { setSelectedItemIndex (index, dontSendChange ? dontSendNotification : sendNotification); }
 void ComboBox::setSelectedId (const int newItemId, const bool dontSendChange)    { setSelectedId (newItemId, dontSendChange ? dontSendNotification : sendNotification); }
 void ComboBox::setText (const String& newText, const bool dontSendChange)        { setText (newText, dontSendChange ? dontSendNotification : sendNotification); }
+
 
 //==============================================================================
 class ComboBoxAccessibilityHandler  : public AccessibilityHandler

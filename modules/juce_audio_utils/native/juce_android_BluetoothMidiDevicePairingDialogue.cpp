@@ -440,12 +440,12 @@ public:
                     overlayBounds.removeFromTop (20).reduced (3, 3),
                     Justification::topLeft, true);
 
-        overlayBounds.removeFromTop (2);
-
-        g.setFont (12);
-        g.drawText ("tap to connect/disconnect",
-                    overlayBounds.removeFromTop (18).reduced (3, 3),
-                    Justification::topLeft, true);
+//        overlayBounds.removeFromTop (2);
+//
+//        g.setFont (12);
+//        g.drawText ("tap to connect/disconnect",
+//                    overlayBounds.removeFromTop (18).reduced (3, 3),
+//                    Justification::topLeft, true);
     }
 
     void inputAttemptWhenModal() override           { exitModalState (0); }

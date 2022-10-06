@@ -81,7 +81,7 @@ struct HeaderItemComponent  : public PopupMenu::CustomComponent
                                                                idealWidth,
                                                                idealHeight,
                                                                options);
-        idealHeight += idealHeight / 2;
+        idealHeight += idealHeight * 1.2f; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         idealWidth += idealWidth / 4;
     }
 

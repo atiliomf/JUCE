@@ -656,6 +656,7 @@ class JUCE_API  TreeView  : public Component,
                             public DragAndDropTarget
 {
 public:
+    bool isBeingDragged;
     //==============================================================================
     /** Creates an empty TreeView.
 

@@ -1719,7 +1719,7 @@ void UIViewComponentPeer::handleTouches (UIEvent* event, MouseEventFlags mouseEv
 
         if (isUp (mouseEventFlags))
         {
-            handleMouseEvent (MouseInputSource::InputSourceType::touch, /*MouseInputSource::offscreenMousePos*/, modsToSend,
+            handleMouseEvent (MouseInputSource::InputSourceType::touch, pos /*MouseInputSource::offscreenMousePos*/, modsToSend,
                               MouseInputSource::defaultPressure, MouseInputSource::defaultOrientation, time, {}, touchIndex);
 
             if (! isValidPeer (this))

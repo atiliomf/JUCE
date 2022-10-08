@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <style name="MyDialogTheme" parent="@android:style/Theme.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    <color name="black">#000000</color>
+    <style name="MyTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:alertDialogTheme">@style/MyDialogTheme</item>
+        <item name="android:dialogTheme">@style/MyDialogTheme</item>
+        <item name="colorPrimaryDark">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+</resources>

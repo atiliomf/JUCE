@@ -131,9 +131,7 @@ private:
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
-
             auto& desktop = Desktop::getInstance();
-
             desktop.setOrientationsEnabled (Desktop::allOrientations);
             desktop.setKioskModeComponent (this);
            #else

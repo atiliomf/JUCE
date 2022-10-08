@@ -105,12 +105,18 @@ static String getDisplayInfo()
     for (int i = 0; i < displays.displays.size(); ++i)
     {
         auto display = displays.displays.getReference (i);
+        
+        auto insets = String (display.safeAreaInsets.getTop()) 
+              + " " + String (display.safeAreaInsets.getLeft()) 
+              + " " + String (display.safeAreaInsets.getBottom())
+              + " " + String (display.safeAreaInsets.getRight());
 
         displayDesc << "Display " << (i + 1) << (display.isMain ? " (main)" : "") << ":" << newLine
                     << "  Total area: " << display.totalArea.toString() << newLine
                     << "  User area:  " << display.userArea .toString() << newLine
-                    << "  DPI: "        << display.dpi   << newLine
-                    << "  Scale: "      << display.scale << newLine
+                    << "  Safe area insets (t l b r): " << insets       << newLine
+                    << "  DPI: "        << display.dpi                  << newLine
+                    << "  Scale: "      << display.scale                << newLine
                     << newLine;
     }
 
@@ -230,6 +236,7 @@ public:
 
     void resized() override
     {
+        resultsBox.setText (getAllSystemInfo());
         resultsBox.setBounds (getLocalBounds().reduced (8));
     }
 

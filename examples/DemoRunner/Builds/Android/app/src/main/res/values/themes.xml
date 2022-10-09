@@ -3,13 +3,15 @@
     <style name="MyDialogTheme" parent="@android:style/Theme.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
-    <color name="black">#000000</color>
-    <style name="MyTheme" parent="Theme.MaterialComponents.NoActionBar">
+
+    <style name="MyTheme" parent="Theme.MaterialComponents">
         <item name="android:alertDialogTheme">@style/MyDialogTheme</item>
         <item name="android:dialogTheme">@style/MyDialogTheme</item>
-        <item name="colorPrimaryDark">@color/black</item>
-        <item name="android:navigationBarColor">@color/black</item>
+
+        <item name="colorPrimaryDark">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>

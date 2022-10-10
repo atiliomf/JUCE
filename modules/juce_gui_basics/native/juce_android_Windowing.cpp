@@ -679,7 +679,7 @@ public:
             if (isTimerRunning())
                 return;
 
-            startTimer (500);
+            startTimer (5); // <<<<<<<<<<<<<<<<<<<<<
         }
         else
         {
@@ -895,7 +895,7 @@ public:
     void handleAppResumedCallback()
     {
         if (isKioskModeComponent())
-            setNavBarsHidden (navBarsHidden, true);
+            setNavBarsHidden (navBarsHidden);
     }
 
     //==============================================================================
@@ -1334,9 +1334,9 @@ private:
         return (shouldBeFullScreen && isKioskModeComponent());
     }
 
-    void setNavBarsHidden (bool hidden, bool force = false)
-    {
-        if (navBarsHidden != hidden)
+    void setNavBarsHidden (bool hidden)
+    {    
+//        if (navBarsHidden != hidden) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         {
             navBarsHidden = hidden;
 

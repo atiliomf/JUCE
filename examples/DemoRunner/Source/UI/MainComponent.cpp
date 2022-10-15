@@ -303,7 +303,7 @@ MainComponent::MainComponent()
     demosPanel.setTitle ("Demos");
     demosPanel.setFocusContainerType (FocusContainerType::focusContainer);
 
-    showDemosButton.onClick = [this] { demosPanel.showOrHide (true); };
+    showDemosButton.onClick = [&] { demosPanel.showOrHide (true); };
 
     demosPanel.onPanelMove = [this]
     {
@@ -358,7 +358,7 @@ void MainComponent::resized()
         auto bounds = getLocalBounds();
 
         if (auto* display = Desktop::getInstance().getDisplays().getDisplayForRect (getScreenBounds()))
-            return display->safeAreaInsets.subtractedFrom (display->keyboardInsets.subtractedFrom (bounds)); //<<<<<<<
+            return /*display->safeAreaInsets.subtractedFrom*/ (display->keyboardInsets.subtractedFrom (bounds)); //<<<<<<<
 
         return bounds;
     }();

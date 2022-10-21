@@ -92,8 +92,8 @@
                    androidBluetoothNeeded="1" androidExternalReadNeeded="1" androidExternalWriteNeeded="1"
                    androidEnableContentSharing="1" androidExtraAssetsFolder="../Assets"
                    smallIcon="YyqWd2" bigIcon="YyqWd2" cameraPermissionNeeded="1"
-                   androidDependencies="implementation 'com.android.support:design:28.0.0'"
-                   androidTheme=" @style/MyTheme" gradleWrapperVersion="7.3.0">
+                   gradleWrapperVersion="7.3.0" androidDependencies="implementation 'com.android.support:design:28.0.0'"
+                   androidTheme="@style/MyTheme">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" recommendedWarnings="LLVM"/>
         <CONFIGURATION isDebug="0" name="Release" recommendedWarnings="LLVM"/>

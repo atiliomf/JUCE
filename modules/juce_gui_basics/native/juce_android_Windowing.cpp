@@ -1347,7 +1347,7 @@ private:
     }
 
     void setNavBarsHidden (bool hidden)
-    {    
+    {
         if (navBarsHidden != hidden)
         {
             navBarsHidden = hidden;

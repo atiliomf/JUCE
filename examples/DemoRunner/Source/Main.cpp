@@ -149,7 +149,7 @@ private:
            #endif
            
           #if JUCE_ANDROID
-           juce::Timer::callAfterDelay (1000, [&] { parentSizeChanged(); });
+            juce::Timer::callAfterDelay (1000, [&] { parentSizeChanged(); });
           #endif
         }
 

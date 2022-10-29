@@ -418,29 +418,11 @@ private:
     {
         return createIgnoredAccessibilityHandler (*this);
     }
-
-    void mouseDownInternal (const MouseEvent& e)
+    
+    void mouseClickedInternal (const MouseEvent& e) // <<<<<<<<<<<<<<<
     {
-        updateItemUnderMouse (e);
-
-        isDragging = false;
-        scopedScrollDisabler = nullopt;
-        needSelectionOnMouseUp = false;
-    }
-
-    void mouseUpInternal (const MouseEvent& e)
-    {
-        updateItemUnderMouse (e);
-
-        if (isEnabled() && needSelectionOnMouseUp && e.mouseWasClicked())
-            if (auto* itemComponent = getItemComponentAt (e.getPosition()))
-                selectBasedOnModifiers (itemComponent->getRepresentedItem(), e.mods);
-                
-        if (! isEnabled()) 
-			return;
-        
-		if (owner.isBeingDragged) 
-			return;    
+        if (! isEnabled() || owner.isBeingDragged) 
+			return;   
 
         if (auto* itemComponent = getItemComponentAt (e.getPosition()))
         {
@@ -469,6 +451,28 @@ private:
                     item.itemClicked (e.withNewPosition (e.position - pos.getPosition().toFloat()));
             }
         }             
+    }
+
+    void mouseDownInternal (const MouseEvent& e)
+    {
+        updateItemUnderMouse (e);
+
+        isDragging = false;
+        scopedScrollDisabler = nullopt;
+        needSelectionOnMouseUp = false;
+        
+        //mouseClickedInternal (e);
+    }
+
+    void mouseUpInternal (const MouseEvent& e)
+    {
+        updateItemUnderMouse (e);
+
+        if (isEnabled() && needSelectionOnMouseUp && e.mouseWasClicked())
+            if (auto* itemComponent = getItemComponentAt (e.getPosition()))
+                selectBasedOnModifiers (itemComponent->getRepresentedItem(), e.mods);
+                
+        mouseClickedInternal (e);
     }
 
     void mouseDoubleClickInternal (const MouseEvent& e)

@@ -749,7 +749,7 @@ float Font::getStringWidthFloat (const String& text) const
     auto w = getTypefacePtr()->getStringWidth (text);
 
     if (font->getKerning() != 0.0f)
-        w += font->getKerning() * (float) text.length();
+        w += font->getKerning() * (float) (text.length() - 1);
 
     return w * font->getHeight() * font->getHorizontalScale();
 }

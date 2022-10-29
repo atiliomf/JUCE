@@ -1326,7 +1326,7 @@ public:
         startTimerHz (20);
     }
 
-    void handleMouseEvent (const MouseEvent& e)
+    void handleMouseEvent (const MouseEvent&)
     {
         if (! window.windowIsStillValid())
             return;

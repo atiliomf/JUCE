@@ -554,11 +554,11 @@ void ComboBox::showPopup()
 void ComboBox::mouseDown (const MouseEvent& e)
 {
     isButtonDown = isEnabled() && ! e.mods.isPopupMenu();
-    
+
 	if (ignoreMouseDown) return;
-    
+
     beginDragAutoRepeat (300);
-    
+
     if (isButtonDown && (e.eventComponent == this || ! label->isEditable()))
         showPopupIfNotActive();
 }
@@ -568,7 +568,7 @@ void ComboBox::mouseDrag (const MouseEvent& e)
     if (ignoreMouseDrag) return;
     
     beginDragAutoRepeat (50);
-    
+
     if (isButtonDown && e.mouseWasDraggedSinceMouseDown())
         showPopupIfNotActive();
 }
@@ -576,16 +576,16 @@ void ComboBox::mouseDrag (const MouseEvent& e)
 void ComboBox::mouseUp (const MouseEvent& e2)
 {
     if (ignoreMouseUp) return;
-    
+
     if (isButtonDown) 
     {
         isButtonDown = false;
         repaint();
-        
+
         auto e = e2.getEventRelativeTo (this);
-        
+
         if (reallyContains (e.getPosition(), true)
-            && (e2.eventComponent == this || ! label->isEditable()))
+             && (e2.eventComponent == this || ! label->isEditable()))
         {
             showPopupIfNotActive();
         }

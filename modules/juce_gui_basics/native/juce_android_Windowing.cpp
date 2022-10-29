@@ -684,7 +684,7 @@ public:
             if (isTimerRunning())
                 return;
 
-            startTimer (500); //<<<<<<<<<<<<<<<<<<<<<
+            startTimer (500);
         }
         else
         {
@@ -1348,7 +1348,7 @@ private:
 
     void setNavBarsHidden (bool hidden)
     {    
-        if (navBarsHidden != hidden) //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
+        if (navBarsHidden != hidden)
         {
             navBarsHidden = hidden;
 

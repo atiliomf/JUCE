@@ -1,3 +1,0 @@
-[submodule "AudioFFT"]
-	path = AudioFFT
-	url = git@github.com:HiFi-LoFi/AudioFFT.git

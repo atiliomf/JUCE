@@ -131,7 +131,9 @@ private:
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
+
             auto& desktop = Desktop::getInstance();
+
             desktop.setOrientationsEnabled (Desktop::allOrientations);
             desktop.setKioskModeComponent (this);
            #else
@@ -147,10 +149,6 @@ private:
            #if JUCE_MAC || JUCE_WINDOWS || JUCE_LINUX || JUCE_BSD
             taskbarIcon.reset (new DemoTaskbarComponent());
            #endif
-           
-          #if JUCE_ANDROID
-            juce::Timer::callAfterDelay (1000, [&] { parentSizeChanged(); });
-          #endif
         }
 
         void closeButtonPressed() override    { JUCEApplication::getInstance()->systemRequestedQuit(); }
@@ -158,13 +156,7 @@ private:
        #if JUCE_IOS || JUCE_ANDROID
         void parentSizeChanged() override
         {
-            static int smallestUserAreaHeight = 1000000;
-            auto* display = Desktop::getInstance().getDisplays().getPrimaryDisplay();
-            if (Desktop::getInstance().getCurrentOrientation() == Desktop::upright)
-                smallestUserAreaHeight = jmin (smallestUserAreaHeight, display->userArea.getHeight()); 
-            BorderSize<int> correctedAreaInsets = display->safeAreaInsets;
-            correctedAreaInsets.setBottom (display->userArea.getHeight() - smallestUserAreaHeight);
-            getMainComponent().setBounds (correctedAreaInsets.subtractedFrom (display->totalArea));
+            getMainComponent().resized();
         }
        #endif
 

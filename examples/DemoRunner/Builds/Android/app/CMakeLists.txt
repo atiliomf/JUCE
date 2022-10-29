@@ -14,7 +14,7 @@ add_subdirectory (${OBOE_DIR} ./oboe)
 add_library("cpufeatures" STATIC "${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c")
 set_source_files_properties("${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c" PROPERTIES COMPILE_FLAGS "-Wno-sign-conversion -Wno-gnu-statement-expression")
 
-add_definitions([[-DJUCE_ANDROID=1]] [[-DJUCE_ANDROID_API_VERSION=21]] [[-DJUCE_PUSH_NOTIFICATIONS=1]] [[-DJUCE_PUSH_NOTIFICATIONS_ACTIVITY="com/rmsl/juce/JuceActivity"]] [[-DJUCE_CONTENT_SHARING=1]] [[-DJUCE_ANDROID_GL_ES_VERSION_3_0=1]] [[-DJUCE_DEMO_RUNNER=1]] [[-DJUCE_UNIT_TESTS=1]] [[-DJUCER_ANDROIDSTUDIO_7F0E4A25=1]] [[-DJUCE_APP_VERSION=7.0.2]] [[-DJUCE_APP_VERSION_HEX=0x70002]])
+add_definitions([[-DJUCE_ANDROID=1]] [[-DJUCE_ANDROID_API_VERSION=23]] [[-DJUCE_PUSH_NOTIFICATIONS=1]] [[-DJUCE_PUSH_NOTIFICATIONS_ACTIVITY="com/rmsl/juce/JuceActivity"]] [[-DJUCE_CONTENT_SHARING=1]] [[-DJUCE_ANDROID_GL_ES_VERSION_3_0=1]] [[-DJUCE_DEMO_RUNNER=1]] [[-DJUCE_UNIT_TESTS=1]] [[-DJUCER_ANDROIDSTUDIO_7F0E4A25=1]] [[-DJUCE_APP_VERSION=7.0.2]] [[-DJUCE_APP_VERSION_HEX=0x70002]])
 
 include_directories( AFTER
     "../../../../../modules/juce_audio_processors/format_types/LV2_SDK/lilv/src"
@@ -3973,14 +3973,12 @@ set_source_files_properties(
     "../../../JuceLibraryCode/JuceHeader.h"
     PROPERTIES HEADER_FILE_ONLY TRUE)
 
-target_compile_options( ${BINARY_NAME} PRIVATE "-fsigned-char" )
-
 if( JUCE_BUILD_CONFIGURATION MATCHES "DEBUG" )
-    target_compile_options( ${BINARY_NAME} PRIVATE -Wall -Wstrict-aliasing -Wuninitialized -Wunused-parameter -Wswitch-enum -Wsign-conversion -Wsign-compare -Wunreachable-code -Wcast-align -Wno-ignored-qualifiers -Wshorten-64-to-32 -Wconversion -Wint-conversion -Wconditional-uninitialized -Wconstant-conversion -Wbool-conversion -Wextra-semi -Wshift-sign-overflow -Wshadow-all -Wnullable-to-nonnull-conversion -Wmissing-prototypes -Woverloaded-virtual -Wreorder -Wzero-as-null-pointer-constant -Wunused-private-field -Winconsistent-missing-destructor-override)
+    target_compile_options( ${BINARY_NAME} PRIVATE -Wall -Wstrict-aliasing -Wuninitialized -Wunused-parameter -Wswitch-enum -Wsign-conversion -Wsign-compare -Wunreachable-code -Wcast-align -Wno-ignored-qualifiers -Wshorten-64-to-32 -Wconversion -Wint-conversion -Wconditional-uninitialized -Wconstant-conversion -Wbool-conversion -Wextra-semi -Wshift-sign-overflow -Wshadow-all -Wnullable-to-nonnull-conversion -Wmissing-prototypes -Woverloaded-virtual -Wreorder -Wzero-as-null-pointer-constant -Wunused-private-field -Winconsistent-missing-destructor-override "-fsigned-char" )
 endif()
 
 if( JUCE_BUILD_CONFIGURATION MATCHES "RELEASE" )
-    target_compile_options( ${BINARY_NAME} PRIVATE -Wall -Wstrict-aliasing -Wuninitialized -Wunused-parameter -Wswitch-enum -Wsign-conversion -Wsign-compare -Wunreachable-code -Wcast-align -Wno-ignored-qualifiers -Wshorten-64-to-32 -Wconversion -Wint-conversion -Wconditional-uninitialized -Wconstant-conversion -Wbool-conversion -Wextra-semi -Wshift-sign-overflow -Wshadow-all -Wnullable-to-nonnull-conversion -Wmissing-prototypes -Woverloaded-virtual -Wreorder -Wzero-as-null-pointer-constant -Wunused-private-field -Winconsistent-missing-destructor-override)
+    target_compile_options( ${BINARY_NAME} PRIVATE -Wall -Wstrict-aliasing -Wuninitialized -Wunused-parameter -Wswitch-enum -Wsign-conversion -Wsign-compare -Wunreachable-code -Wcast-align -Wno-ignored-qualifiers -Wshorten-64-to-32 -Wconversion -Wint-conversion -Wconditional-uninitialized -Wconstant-conversion -Wbool-conversion -Wextra-semi -Wshift-sign-overflow -Wshadow-all -Wnullable-to-nonnull-conversion -Wmissing-prototypes -Woverloaded-virtual -Wreorder -Wzero-as-null-pointer-constant -Wunused-private-field -Winconsistent-missing-destructor-override "-fsigned-char" )
 endif()
 
 find_library(log "log")

@@ -136,7 +136,7 @@ public:
     */
     virtual void initialise (const String& commandLineParameters) = 0;
 
-    /** Called to allow the application to clear up before exiting.
+    /* Called to allow the application to clear up before exiting.
 
        After JUCEApplication::quit() has been called, the event-dispatch loop will
        terminate, and this method will get called to allow the app to sort itself

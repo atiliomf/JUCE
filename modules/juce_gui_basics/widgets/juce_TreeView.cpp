@@ -419,10 +419,10 @@ private:
         return createIgnoredAccessibilityHandler (*this);
     }
     
-    void mouseClickedInternal (const MouseEvent& e) // <<<<<<<<<<<<<<<
+    void mouseClickInternal (const MouseEvent& e)
     {
         if (! isEnabled() || owner.isBeingDragged) 
-			return;   
+			return;
 
         if (auto* itemComponent = getItemComponentAt (e.getPosition()))
         {
@@ -461,7 +461,7 @@ private:
         scopedScrollDisabler = nullopt;
         needSelectionOnMouseUp = false;
         
-        //mouseClickedInternal (e);
+        //mouseClickInternal (e);
     }
 
     void mouseUpInternal (const MouseEvent& e)
@@ -472,7 +472,7 @@ private:
             if (auto* itemComponent = getItemComponentAt (e.getPosition()))
                 selectBasedOnModifiers (itemComponent->getRepresentedItem(), e.mods);
                 
-        mouseClickedInternal (e);
+        mouseClickInternal (e);
     }
 
     void mouseDoubleClickInternal (const MouseEvent& e)

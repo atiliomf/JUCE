@@ -479,7 +479,16 @@ void GlyphArrangement::justifyGlyphs (int startIndex, int num,
         else if (justification.testFlags (Justification::bottom))               deltaY += height - bb.getBottom();
         else                                                                    deltaY += (height - bb.getHeight()) * 0.5f - bb.getY();
 
-        moveRangeOfGlyphs (startIndex, num, deltaX, deltaY);
+        if (justification.testFlags (Justification::horizontallyCentred))  
+        {
+            auto font = glyphs.getLast().font;
+            auto kerningOfLastGlyph = font.getExtraKerningFactor() * font.getHeight() * font.getHorizontalScale();
+            moveRangeOfGlyphs (startIndex, num, deltaX + kerningOfLastGlyph * 0.5f, deltaY);
+        }
+        else
+        {
+            moveRangeOfGlyphs (startIndex, num, deltaX, deltaY);
+        }
 
         if (justification.testFlags (Justification::horizontallyJustified))
         {

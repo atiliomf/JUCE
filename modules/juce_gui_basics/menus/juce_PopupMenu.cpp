@@ -23,8 +23,6 @@
   ==============================================================================
 */
 
-#define JUCE_POPUPMENU_PATCHES 1
-
 namespace juce
 {
 
@@ -83,7 +81,7 @@ struct HeaderItemComponent  : public PopupMenu::CustomComponent
                                                                idealWidth,
                                                                idealHeight,
                                                                options);
-        idealHeight = roundToInt (idealHeight * 2.2f);
+        idealHeight += idealHeight / 2;
         idealWidth += idealWidth / 4;
     }
 
@@ -326,13 +324,16 @@ private:
 //==============================================================================
 struct MenuWindow  : public Component
 {
-    MenuWindow (const PopupMenu& menu, MenuWindow* parentWindow,
-                Options opts, bool alignToRectangle, bool shouldDismissOnMouseUp,
-                ApplicationCommandManager** manager, float parentScaleFactor = 1.0f)
+    MenuWindow (const PopupMenu& menu,
+                MenuWindow* parentWindow,
+                Options opts,
+                bool alignToRectangle,
+                bool shouldDismissOnMouseUp,
+                ApplicationCommandManager** manager,
+                float parentScaleFactor = 1.0f)
         : Component ("menu"),
           parent (parentWindow),
-          parentItem (parentWindow ? parentWindow->currentChild : nullptr),
-          options (opts.withParentComponent (getLookAndFeel().getParentComponentForMenuOptions (opts))),
+          options (opts.withParentComponent (findLookAndFeel (menu, parentWindow)->getParentComponentForMenuOptions (opts))),
           managerOfChosenCommand (manager),
           componentAttachedTo (options.getTargetComponent()),
           dismissOnMouseUp (shouldDismissOnMouseUp),
@@ -346,8 +347,7 @@ struct MenuWindow  : public Component
         setAlwaysOnTop (true);
         setFocusContainerType (FocusContainerType::focusContainer);
 
-        setLookAndFeel (parent != nullptr ? &(parent->getLookAndFeel())
-                                          : menu.lookAndFeel.get());
+        setLookAndFeel (findLookAndFeel (menu, parentWindow));
 
         auto& lf = getLookAndFeel();
 
@@ -1294,9 +1294,19 @@ struct MenuWindow  : public Component
                                                        }));
     }
 
+    LookAndFeel* findLookAndFeel (const PopupMenu& menu, MenuWindow* parentWindow) const
+    {
+        if (parentWindow != nullptr)
+            return &(parentWindow->getLookAndFeel());
+
+        if (auto* lnf = menu.lookAndFeel.get())
+            return lnf;
+
+        return &getLookAndFeel();
+    }
+
     //==============================================================================
     MenuWindow* parent;
-    Component::SafePointer<ItemComponent> parentItem; // parent->currentChild at time of creation of this window
     const Options options;
     OwnedArray<ItemComponent> items;
     ApplicationCommandManager** managerOfChosenCommand;
@@ -1326,13 +1336,13 @@ public:
         startTimerHz (20);
     }
 
-    void handleMouseEvent (const MouseEvent&)
+    void handleMouseEvent (const MouseEvent& e)
     {
         if (! window.windowIsStillValid())
             return;
 
         startTimerHz (20);
-        handleMousePosition (source.getScreenPosition().roundToInt());
+        handleMousePosition (e.getScreenPosition());
     }
 
     void timerCallback() override
@@ -1350,7 +1360,7 @@ public:
 
     bool isOver() const
     {
-        return reallyContains (window.getLocalPoint (nullptr, source.getScreenPosition()).roundToInt());
+        return window.reallyContains (window.getLocalPoint (nullptr, source.getScreenPosition()).roundToInt(), true);
     }
 
     MenuWindow& window;
@@ -1361,91 +1371,18 @@ private:
     double scrollAcceleration = 0;
     uint32 lastScrollTime, lastMouseMoveTime = 0;
     bool isDown = false;
-    
-    bool isTouchDragging = false; 
-    Point<int> lastTouchDraggingPos;
-    bool lastMousePosIsValid = false;
-    bool hasMouseMovedOnce = false;
 
-    bool reallyContains (const Point<int> localMousePos) const 
-    {
-#if JUCE_POPUPMENU_PATCHES
-        auto globalMousePos = window.localPointToGlobal(localMousePos);
-        auto *c = Desktop::getInstance().findComponentAt(globalMousePos);
-        if (!c) return false;
-        c = c->getTopLevelComponent();
-        return (c == window.getTopLevelComponent()) && window.reallyContains(localMousePos, true);
-#else
-        return window.reallyContains(localMousePos, true);
-#endif
-    }
-    
     void handleMousePosition (Point<int> globalMousePos)
     {
         auto localMousePos = window.getLocalPoint (nullptr, globalMousePos);
         auto timeNow = Time::getMillisecondCounter();
 
-#if JUCE_POPUPMENU_PATCHES
-        /* ref: https://forum.juce.com/t/improving-popupmenu-for-touch-screens/37784 */
-        if (source.isTouch()) 
-        {
-            if (source.getIndex() > 0) return; // one finger only
-
-            if (source.isDragging() && source.hasMovedSignificantlySincePressed()) 
-            {
-                bool move = isTouchDragging && window.canScroll();
-                // using globalMousePos does not work well when scrolling (jumps)
-                auto pos = source.getScreenPosition().roundToInt();
-
-                if (move) 
-                {
-                    auto delta_y = lastTouchDraggingPos.y - pos.y;
-                    if (delta_y) 
-                    {
-                        window.alterChildYPos(delta_y);
-                    }
-                }
-                lastTouchDraggingPos = pos;
-                isTouchDragging = true;
-            }
-            
-            if (!source.isDragging() && isTouchDragging) 
-            {
-                isTouchDragging = false;
-                isDown = false; // prevent triggerCurrentlyHighlightedItem from being called after a drag
-            }
-            
-            if (isTouchDragging) 
-            {
-                if (window.activeSubMenu)
-                    window.activeSubMenu->hide (nullptr, true);
-                return; // skip everything else (the auto-scroll, the submenu display..)
-            }
-        }
-#endif
-
         if (timeNow > window.timeEnteredCurrentChildComp + 100
-             && reallyContains (localMousePos)
+             && window.reallyContains (localMousePos, true)
              && window.currentChild != nullptr
              && ! (window.disableMouseMoves || window.isSubMenuVisible()))
         {
-#if JUCE_POPUPMENU_PATCHES
-            if (window.activeSubMenu && window.activeSubMenu->parentItem == window.currentChild) {
-            } else {
-                // the test on hasMouseMovedOnce prevents immediately showing a submenu if the mouse
-                // cursor happens to be over a submenu item when the window appears.
-                // it is especially annoying on touchscreens
-                if (hasMouseMovedOnce)
-                    window.showSubMenuFor (window.currentChild);
-            }
-#else
-                window.showSubMenuFor (window.currentChild);
-#endif
-        }
-
-        if (!lastMousePosIsValid) { lastMousePos = globalMousePos; lastMousePosIsValid = true; }
-        if (lastMousePosIsValid && lastMousePos != globalMousePos) {
-          hasMouseMovedOnce = true;
+            window.showSubMenuFor (window.currentChild);
         }
 
         highlightItemUnderMouse (globalMousePos, localMousePos, timeNow);
@@ -1478,26 +1415,8 @@ private:
         else if (wasDown && timeNow > window.windowCreationTime + 250
                    && ! (isDown || overScrollArea))
         {
-            if (reallyContains (localMousePos)) 
-            {
- #if JUCE_POPUPMENU_PATCHES
-                // hide / show the submenu when clicking on its item (useful for small screens where a submenu
-                // may cover its parent menu)
-                if (window.activeSubMenu && window.activeSubMenu->parentItem == window.currentChild) 
-                {
-                    if (window.activeSubMenu->isVisible()) 
-                    {
-                        if (timeNow > window.activeSubMenu->windowCreationTime + 250)
-                            window.activeSubMenu->hide(nullptr, true);
-                    } 
-                    else 
-                    {
-                        window.showSubMenuFor(window.currentChild);
-                    }
-                }
-#endif // JUCE_POPUPMENU_PATCHES
+            if (window.reallyContains (localMousePos, true))
                 window.triggerCurrentlyHighlightedItem();
-            }
             else if ((window.hasBeenOver || ! window.dismissOnMouseUp) && ! isOverAny)
                 window.dismissMenu (nullptr);
 
@@ -1513,7 +1432,7 @@ private:
     {
         if (globalMousePos != lastMousePos || timeNow > lastMouseMoveTime + 350)
         {
-            const auto isMouseOver = reallyContains (localMousePos);
+            const auto isMouseOver = window.reallyContains (localMousePos, true);
 
             if (isMouseOver)
                 window.hasBeenOver = true;
@@ -1617,10 +1536,6 @@ private:
 
     bool scroll (const uint32 timeNow, const int direction)
     {
-     #if JUCE_POPUPMENU_PATCHES
-        return true;
-     #endif
-     
         if (timeNow > lastScrollTime + 20)
         {
             scrollAcceleration = jmin (4.0, scrollAcceleration * 1.04);
@@ -2197,7 +2112,7 @@ struct PopupMenuCompletionCallback  : public ModalComponentManager::Callback
 
 int PopupMenu::showWithOptionalCallback (const Options& options,
                                          ModalComponentManager::Callback* userCallback,
-                                         bool canBeModal)
+                                         [[maybe_unused]] bool canBeModal)
 {
     std::unique_ptr<ModalComponentManager::Callback> userCallbackDeleter (userCallback);
     std::unique_ptr<PopupMenuCompletionCallback> callback (new PopupMenuCompletionCallback());
@@ -2219,7 +2134,6 @@ int PopupMenu::showWithOptionalCallback (const Options& options,
         if (userCallback == nullptr && canBeModal)
             return window->runModalLoop();
        #else
-        ignoreUnused (canBeModal);
         jassert (! (userCallback == nullptr && canBeModal));
        #endif
     }

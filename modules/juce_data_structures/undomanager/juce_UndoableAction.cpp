@@ -23,29 +23,9 @@
   ==============================================================================
 */
 
-#include <juce_core/system/juce_TargetPlatform.h>
+namespace juce
+{
 
-#if JucePlugin_Build_Standalone
+UndoableAction* UndoableAction::createCoalescedAction ([[maybe_unused]] UndoableAction* nextAction)  { return nullptr; }
 
-#if ! JUCE_MODULE_AVAILABLE_juce_audio_utils
- #error To compile AudioUnitv3 and/or Standalone plug-ins, you need to add the juce_audio_utils and juce_audio_devices modules!
-#endif
-
-#include "Standalone/juce_StandaloneFilterApp.cpp"
-
-#if JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP
- extern juce::JUCEApplicationBase* juce_CreateApplication();
-
- #if JUCE_IOS
-  extern void* juce_GetIOSCustomDelegateClass();
- #endif
-
-#else
- JUCE_CREATE_APPLICATION_DEFINE(juce::StandaloneFilterApp)
-#endif
-
-#if ! JUCE_USE_CUSTOM_PLUGIN_STANDALONE_ENTRYPOINT
- JUCE_MAIN_FUNCTION_DEFINITION
-#endif
-
-#endif
+} // namespace juce

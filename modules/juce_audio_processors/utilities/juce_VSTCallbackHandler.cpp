@@ -23,29 +23,17 @@
   ==============================================================================
 */
 
-#include <juce_core/system/juce_TargetPlatform.h>
+namespace juce
+{
 
-#if JucePlugin_Build_Standalone
+pointer_sized_int VSTCallbackHandler::handleVstPluginCanDo ([[maybe_unused]] int32 index,
+                                                            [[maybe_unused]] pointer_sized_int value,
+                                                            [[maybe_unused]] void* ptr,
+                                                            [[maybe_unused]] float opt)
+{
+    return 0;
+}
 
-#if ! JUCE_MODULE_AVAILABLE_juce_audio_utils
- #error To compile AudioUnitv3 and/or Standalone plug-ins, you need to add the juce_audio_utils and juce_audio_devices modules!
-#endif
+void VSTCallbackHandler::handleVstHostCallbackAvailable ([[maybe_unused]] std::function<VstHostCallbackType>&& callback) {}
 
-#include "Standalone/juce_StandaloneFilterApp.cpp"
-
-#if JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP
- extern juce::JUCEApplicationBase* juce_CreateApplication();
-
- #if JUCE_IOS
-  extern void* juce_GetIOSCustomDelegateClass();
- #endif
-
-#else
- JUCE_CREATE_APPLICATION_DEFINE(juce::StandaloneFilterApp)
-#endif
-
-#if ! JUCE_USE_CUSTOM_PLUGIN_STANDALONE_ENTRYPOINT
- JUCE_MAIN_FUNCTION_DEFINITION
-#endif
-
-#endif
+} // namespace juce

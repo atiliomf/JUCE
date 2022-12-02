@@ -23,29 +23,17 @@
   ==============================================================================
 */
 
-#include <juce_core/system/juce_TargetPlatform.h>
+namespace juce
+{
 
-#if JucePlugin_Build_Standalone
+#if JUCE_WEB_BROWSER || DOXYGEN
 
-#if ! JUCE_MODULE_AVAILABLE_juce_audio_utils
- #error To compile AudioUnitv3 and/or Standalone plug-ins, you need to add the juce_audio_utils and juce_audio_devices modules!
-#endif
-
-#include "Standalone/juce_StandaloneFilterApp.cpp"
-
-#if JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP
- extern juce::JUCEApplicationBase* juce_CreateApplication();
-
- #if JUCE_IOS
-  extern void* juce_GetIOSCustomDelegateClass();
- #endif
-
-#else
- JUCE_CREATE_APPLICATION_DEFINE(juce::StandaloneFilterApp)
-#endif
-
-#if ! JUCE_USE_CUSTOM_PLUGIN_STANDALONE_ENTRYPOINT
- JUCE_MAIN_FUNCTION_DEFINITION
-#endif
+bool WebBrowserComponent::pageAboutToLoad ([[maybe_unused]] const String& newURL)             { return true; }
+void WebBrowserComponent::pageFinishedLoading ([[maybe_unused]] const String& url)            {}
+bool WebBrowserComponent::pageLoadHadNetworkError ([[maybe_unused]] const String& errorInfo)  { return true; }
+void WebBrowserComponent::windowCloseRequest()                                                {}
+void WebBrowserComponent::newWindowAttemptingToLoad ([[maybe_unused]] const String& newURL)   {}
 
 #endif
+
+} // namespace juce

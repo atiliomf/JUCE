@@ -65,3 +65,8 @@ extras/Projucer/JUCECompileEngine.dylib
 /build
 
 CMakeUserPresets.json
+Projucer.app/Contents/Info.plist
+Projucer.app/Contents/MacOS/Projucer
+Projucer.app/Contents/PkgInfo
+Projucer.app/Contents/Resources/Icon.icns
+Projucer.app/Contents/Resources/RecentFilesMenuTemplate.nib

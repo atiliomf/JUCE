@@ -255,11 +255,8 @@ void RuntimePermissions::request (PermissionID permission, Callback callback)
         overlay->open();
 }
 
-bool RuntimePermissions::isRequired (PermissionID permission)
+bool RuntimePermissions::isRequired (PermissionID /*permission*/)
 {
-    if (permission == RuntimePermissions::writeExternalStorage && getAndroidSDKVersion() > 28)
-        return false;
-
     return getAndroidSDKVersion() >= 23;
 }
 

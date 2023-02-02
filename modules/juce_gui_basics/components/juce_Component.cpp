@@ -23,6 +23,10 @@
   ==============================================================================
 */
 
+#if PERFETTO
+#include <melatonin_perfetto/melatonin_perfetto.h>
+#endif
+
 namespace juce
 {
 
@@ -1996,6 +2000,10 @@ void Component::paintWithinParentContext (Graphics& g)
 
 void Component::paintComponentAndChildren (Graphics& g)
 {
+    #if TRACE_ALL_COMPONENTS
+    TRACE_EVENT ("component", perfetto::DynamicString { getName().getCharPointer() } );
+    #endif
+
     auto clipBounds = g.getClipBounds();
 
     if (flags.dontClipGraphicsFlag && getNumChildComponents() == 0)

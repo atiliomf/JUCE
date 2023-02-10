@@ -423,6 +423,8 @@ public:
     void valueChanged (Value&) override;
     /** @internal */
     void parentHierarchyChanged() override;
+    /** @internal */
+    std::unique_ptr<AccessibilityHandler> createAccessibilityHandler() override;
 
     //==============================================================================
    #ifndef DOXYGEN
@@ -452,7 +454,6 @@ private:
     String textWhenNothingSelected, noChoicesMessage;
     EditableState labelEditableState = editableUnknown;
 
-    std::unique_ptr<AccessibilityHandler> createAccessibilityHandler() override;
     PopupMenu::Item* getItemForId (int) const noexcept;
     PopupMenu::Item* getItemForIndex (int) const noexcept;
     bool selectIfEnabled (int index);

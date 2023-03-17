@@ -35,7 +35,7 @@ namespace juce
 
     // This is an internal list of callbacks (but currently used between modules)
     Array<AppInactivityCallback*> appBecomingInactiveCallbacks;
-}
+} // namespace juce
 
 #if JUCE_PUSH_NOTIFICATIONS
 @interface JuceAppStartupDelegate : NSObject <UIApplicationDelegate, UNUserNotificationCenterDelegate>
@@ -569,15 +569,15 @@ bool Desktop::isScreenSaverEnabled()
 }
 
 //==============================================================================
-bool juce_areThereAnyAlwaysOnTopWindows()
+bool detail::WindowingHelpers::areThereAnyAlwaysOnTopWindows()
 {
     return false;
 }
 
 //==============================================================================
-Image juce_createIconForFile (const File&)
+Image detail::WindowingHelpers::createIconForFile (const File&)
 {
-    return Image();
+    return {};
 }
 
 //==============================================================================
@@ -593,13 +593,13 @@ String SystemClipboard::getTextFromClipboard()
 }
 
 //==============================================================================
-bool MouseInputSource::SourceList::addSource()
+bool detail::MouseInputSourceList::addSource()
 {
     addSource (sources.size(), MouseInputSource::InputSourceType::touch);
     return true;
 }
 
-bool MouseInputSource::SourceList::canUseTouch()
+bool detail::MouseInputSourceList::canUseTouch() const
 {
     return true;
 }

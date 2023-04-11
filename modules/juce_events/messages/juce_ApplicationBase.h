@@ -136,7 +136,7 @@ public:
     */
     virtual void initialise (const String& commandLineParameters) = 0;
 
-    /** Called to allow the application to clear up before exiting.
+    /* Called to allow the application to clear up before exiting.
 
        After JUCEApplication::quit() has been called, the event-dispatch loop will
        terminate, and this method will get called to allow the app to sort itself
@@ -205,13 +205,6 @@ public:
     */
     virtual void memoryWarningReceived()     { jassertfalse; }
 
-    //============================================================================== 
-    /** Called by the operating system when a custom file type was opened. 
- 
-        At the moment this method is only called on iOS.
-    */
-    virtual void urlOpened (const URL&) {}
-    
     //==============================================================================
     /** This will be called when the back button on a device is pressed. The return value
         should be used to indicate whether the back button event has been handled by

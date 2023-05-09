@@ -48,9 +48,6 @@ class JUCE_API  ComboBox  : public Component,
                             private AsyncUpdater
 {
 public:
-    bool ignoreMouseDown = false; 
-    bool ignoreMouseDrag = false; 
-    bool ignoreMouseUp   = false;
 	bool canReselectSameItem = false; 
     //==============================================================================
     /** Creates a combo-box.

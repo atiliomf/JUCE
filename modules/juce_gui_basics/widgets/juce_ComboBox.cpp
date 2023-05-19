@@ -551,9 +551,9 @@ void ComboBox::showPopup()
 //==============================================================================
 void ComboBox::mouseDown (const MouseEvent& e)
 {
-    isButtonDown = isEnabled() && ! e.mods.isPopupMenu();
-
     beginDragAutoRepeat (300);
+
+    isButtonDown = isEnabled() && ! e.mods.isPopupMenu();
 
     if (isButtonDown && (e.eventComponent == this || ! label->isEditable()))
         showPopupIfNotActive();
@@ -569,7 +569,7 @@ void ComboBox::mouseDrag (const MouseEvent& e)
 
 void ComboBox::mouseUp (const MouseEvent& e2)
 {
-    if (isButtonDown) 
+    if (isButtonDown)
     {
         isButtonDown = false;
         repaint();
@@ -649,7 +649,6 @@ void ComboBox::clear (const bool dontSendChange)                                
 void ComboBox::setSelectedItemIndex (const int index, const bool dontSendChange) { setSelectedItemIndex (index, dontSendChange ? dontSendNotification : sendNotification); }
 void ComboBox::setSelectedId (const int newItemId, const bool dontSendChange)    { setSelectedId (newItemId, dontSendChange ? dontSendNotification : sendNotification); }
 void ComboBox::setText (const String& newText, const bool dontSendChange)        { setText (newText, dontSendChange ? dontSendNotification : sendNotification); }
-
 
 //==============================================================================
 class ComboBoxAccessibilityHandler  : public AccessibilityHandler

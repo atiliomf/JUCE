@@ -57,6 +57,8 @@ profile
 **/doxygen/build
 **/.idea
 extras/Projucer/JUCECompileEngine.dylib
+Examples/DemoRunner/Builds
+Examples/DemoRunner/DemoRunner.jucer
 
 .idea
 **/cmake-build*

@@ -50,7 +50,7 @@
      FileSearchPath paths;
 
      static constexpr auto numJobs = 5;
-     ThreadPool pool { numJobs };
+     ThreadPool pool { ThreadPoolOptions{}.withNumberOfThreads (numJobs) };
 
      void startScan()
      {
@@ -894,9 +894,9 @@ void GraphEditorPanel::showPopupMenu (Point<int> mousePos)
         menu->showMenuAsync ({},
                              ModalCallbackFunction::create ([this, mousePos] (int r)
                                                             {
-                                                                if (r > 0)
-                                                                    if (auto* mainWin = findParentComponentOfClass<MainHostWindow>())
-                                                                        createNewPlugin (mainWin->getChosenType (r), mousePos);
+                                                                if (auto* mainWin = findParentComponentOfClass<MainHostWindow>())
+                                                                    if (const auto chosen = mainWin->getChosenType (r))
+                                                                        createNewPlugin (*chosen, mousePos);
                                                             }));
     }
 }

@@ -1145,9 +1145,24 @@ public:
                         valueBox->hideEditor (false);
 
                     auto value = static_cast<double> (currentValue.getValue());
-                    auto delta = getMouseWheelDelta (value, (std::abs (wheel.deltaX) > std::abs (wheel.deltaY)
-                                                                  ? -wheel.deltaX : wheel.deltaY)
-                                                               * (wheel.isReversed ? -1.0f : 1.0f));
+                    
+                    bool isVertical = style == LinearVertical 
+                                   || style == LinearBarVertical 
+                                   || style == ThreeValueVertical 
+                                   || style == RotaryVerticalDrag;
+                                   
+                    bool isHorizontal = style == LinearHorizontal 
+                                     || style == LinearBar 
+                                     || style == ThreeValueHorizontal 
+                                     || style == RotaryHorizontalDrag;
+                    
+                    auto wheelDelta = isVertical ? wheel.deltaY 
+                                    : isHorizontal ? -wheel.deltaX 
+                                    : (std::abs (wheel.deltaX) > std::abs (wheel.deltaY) ? -wheel.deltaX 
+                                                                                         : wheel.deltaY);
+                    
+                    auto delta = getMouseWheelDelta (value, wheelDelta * (wheel.isReversed ? -1.0f : 1.0f));
+                    
                     if (! approximatelyEqual (delta, 0.0))
                     {
                         auto newValue = value + jmax (normRange.interval, std::abs (delta)) * (delta < 0 ? -1.0 : 1.0);

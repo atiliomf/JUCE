@@ -48,7 +48,7 @@ struct InAppPurchases::Pimpl
 
       #if JUCE_IOS
         int64 getContentLength()   const override  { return download.contentLength; }
-        Status getStatus()         const override  { return SKDownloadStateToDownloadStatus (download.downloadState); }
+        Status getStatus()         const override  { return SKDownloadStateToDownloadStatus (download.state); }
       #else
         int64 getContentLength()   const override
         {
@@ -102,11 +102,8 @@ struct InAppPurchases::Pimpl
         {
             for (SKDownload* d in transaction.downloads)
             {
-              #if JUCE_IOS
-                SKDownloadState state = d.downloadState;
-              #else
                 SKDownloadState state = d.state;
-              #endif
+                
                 if (state != SKDownloadStateFinished
                      && state != SKDownloadStateFailed
                      && state != SKDownloadStateCancelled)
@@ -349,11 +346,7 @@ struct InAppPurchases::Pimpl
     {
         if (auto* pdt = getPendingDownloadsTransactionSKDownloadFor (download))
         {
-          #if JUCE_IOS
-            SKDownloadState state = download.downloadState;
-          #else
             SKDownloadState state = download.state;
-          #endif
 
             auto contentURL = state == SKDownloadStateFinished
                                 ? URL (nsStringToJuce (download.contentURL.absoluteString))
@@ -770,11 +763,7 @@ private:
                 {
                     if (auto* pendingDownload = t.getPendingDownloadFor (download))
                     {
-                       #if JUCE_IOS
-                        switch (download.downloadState)
-                       #else
                         switch (download.state)
-                       #endif
                         {
                             case SKDownloadStateWaiting:
                                 break;

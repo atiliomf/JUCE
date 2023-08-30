@@ -268,10 +268,7 @@ static Tolerance<Type> relativeTolerance (Type tolerance)
 }
 
 
-/** Returns true if the two numbers are approximately equal. This is useful for floating-point
-    comparisons.
-
-    If a and b are not floating-point types, returns a == b.
+/** Returns true if the two floating-point numbers are approximately equal.
 
     If either a or b are not finite, returns exactlyEqual (a, b).
 
@@ -289,20 +286,19 @@ static Tolerance<Type> relativeTolerance (Type tolerance)
     of 0.05 will ensure values return equal if the difference between them is less than or equal to
     5% of the larger of the two absolute values.
 
+    @param a            The first number to compare.
+    @param b            The second number to compare.
     @param tolerance    An object that represents both absolute and relative tolerances
                         when evaluating if a and b are equal.
 
     @see exactlyEqual
 */
-template <typename Type>
+template <typename Type, std::enable_if_t<std::is_floating_point_v<Type>, int> = 0>
 constexpr bool approximatelyEqual (Type a, Type b,
                                    Tolerance<Type> tolerance = Tolerance<Type>{}
                                         .withAbsolute (std::numeric_limits<Type>::min())
                                         .withRelative (std::numeric_limits<Type>::epsilon()))
 {
-    if constexpr (! std::is_floating_point_v<Type>)
-        return a == b;
-
     if (! (juce_isfinite (a) && juce_isfinite (b)))
         return exactlyEqual (a, b);
 
@@ -310,6 +306,13 @@ constexpr bool approximatelyEqual (Type a, Type b,
 
     return diff <= tolerance.getAbsolute()
         || diff <= tolerance.getRelative() * std::max (std::abs (a), std::abs (b));
+}
+
+/** Special case for non-floating-point types that returns true if both are exactly equal. */
+template <typename Type, std::enable_if_t<! std::is_floating_point_v<Type>, int> = 0>
+constexpr bool approximatelyEqual (Type a, Type b)
+{
+    return a == b;
 }
 
 //==============================================================================

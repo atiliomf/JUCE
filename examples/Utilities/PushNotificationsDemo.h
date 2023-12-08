@@ -111,8 +111,8 @@ public class JuceActivity   extends Activity
     @Override
     protected void onNewIntent (Intent intent)
     {
-        super.onNewIntent(intent);
-        setIntent(intent);
+        super.onNewIntent (intent);
+        setIntent (intent);
 
         appNewIntent (intent);
     }
@@ -1087,7 +1087,7 @@ private:
       #endif
     }
 
-    struct ParamsView   : public Component
+    struct ParamsView final : public Component
     {
         ParamsView()
         {
@@ -1191,7 +1191,7 @@ private:
 
         void resized()
         {
-            auto rowSize = getHeight () / 10;
+            auto rowSize = getHeight() / 10;
 
             auto bounds = getLocalBounds().reduced (getWidth() / 10, getHeight() / 10);
 

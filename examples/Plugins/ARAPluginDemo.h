@@ -513,6 +513,11 @@ public:
         asyncConfigCallback.startConfigure();
     }
 
+    void willRemoveRegionSequence (ARA::PlugIn::RegionSequence* rs) noexcept override
+    {
+        regionSequences.erase (static_cast<ARARegionSequence*> (rs));
+    }
+
     void didAddPlaybackRegion (ARA::PlugIn::PlaybackRegion*) noexcept override
     {
         asyncConfigCallback.startConfigure();
@@ -1103,7 +1108,7 @@ public:
                     const int x = timeToViewScaling.getXForTime (tempoConverter.getTimeForQuarter (quarterPos));
                     const auto barSignature = barSignaturesConverter.getBarSignatureForQuarter (quarterPos);
                     const int lineWidth = (approximatelyEqual (quarterPos, barSignature.position)) ? heavyLineWidth : lightLineWidth;
-                    const int beatsSinceBarStart = roundToInt( barSignaturesConverter.getBeatDistanceFromBarStartForQuarter (quarterPos));
+                    const int beatsSinceBarStart = roundToInt (barSignaturesConverter.getBeatDistanceFromBarStartForQuarter (quarterPos));
                     const int lineHeight = (beatsSinceBarStart == 0) ? rulerHeight : rulerHeight / 2;
                     rects.addWithoutMerging (Rectangle<int> (x - lineWidth / 2, 2 * rulerHeight - lineHeight, lineWidth, lineHeight));
                 }
@@ -2196,7 +2201,7 @@ private:
 
     void addTrackViews (ARARegionSequence* regionSequence)
     {
-        const auto insertIntoMap = [](auto& map, auto key, auto value) -> auto&
+        const auto insertIntoMap = [] (auto& map, auto key, auto value) -> auto&
         {
             auto it = map.insert ({ std::move (key), std::move (value) });
             return *(it.first->second);

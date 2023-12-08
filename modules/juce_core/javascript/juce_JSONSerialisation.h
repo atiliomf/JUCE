@@ -144,7 +144,7 @@ private:
             {
                 push ((double) t);
             }
-            else if (auto converted = convert(t))
+            else if (auto converted = convert (t))
             {
                 push (*converted);
             }
@@ -508,6 +508,8 @@ struct VariantConverter<String>
     template <>
     struct juce::VariantConverter<MyType> : public juce::StrictVariantConverter<MyType> {};
     @endcode
+
+    @tags{Core}
 */
 template <typename Type>
 struct StrictVariantConverter

@@ -1,6 +1,59 @@
 # JUCE breaking changes
 
-# `develop` branch
+# develop
+
+## Change
+
+The signature of DynamicObject::writeAsJSON() has been changed to accept a
+more extensible JSON::FormatOptions argument.
+
+**Possible Issues**
+
+Code that overrides this function will fail to compile.
+
+**Workaround**
+
+Update the signatures of overriding functions. Use Formatter::getIndentLevel()
+and Formatter::getMaxDecimalPlaces() as necessary. To find whether the output
+should be multi-line, compare the result of Formatter::getSpacing() with
+JSON::Spacing::multiLine.
+
+**Rationale**
+
+The previous signature made it impossible to add new formatting options. Now,
+if we need to add further options in the future, these can be added to the
+FormatOptions type, which will not be a breaking change.
+
+
+# Version 7.0.9
+
+## Change
+
+CachedValue::operator==() will now emit floating point comparison warnings if 
+they are enabled for the project.
+
+**Possible Issues**
+
+Code using this function to compare floating point values may fail to compile
+due to the warnings.
+
+**Workaround**
+
+Rather than using CachedValue::operator==() for floating point types, use the
+exactlyEqual() or approximatelyEqual() functions in combination with
+CachedValue::get().
+
+**Rationale**
+
+The JUCE Framework now offers the free-standing exactlyEqual() and 
+approximatelyEqual() functions to clearly express the desired semantics when
+comparing floating point values. These functions are intended to eliminate
+the ambiguity in code-bases regarding these types. However, when such a value
+is wrapped in a CachedValue the corresponding warning was suppressed until now,
+making such efforts incomplete.
+
+
+# Version 7.0.8
 
 ## Change
 

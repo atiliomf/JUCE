@@ -344,7 +344,7 @@ void JUCE_CALLTYPE Timer::callPendingTimersSynchronously()
         (*instance)->callTimersSynchronously();
 }
 
-struct LambdaInvoker final : private Timer
+struct LambdaInvoker final : private Timer, private DeletedAtShutdown
 {
     LambdaInvoker (int milliseconds, std::function<void()> f)  : function (f)
     {

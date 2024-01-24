@@ -267,8 +267,7 @@ struct InAppPurchases::Pimpl
         auto orderId      = nsStringToJuce (transaction.transactionIdentifier);
         auto packageName  = nsStringToJuce ([[NSBundle mainBundle] bundleIdentifier]);
         auto productId    = nsStringToJuce (transaction.payment.productIdentifier);
-        auto purchaseTime = Time (1000 * (int64) transaction.transactionDate.timeIntervalSince1970)
-                              .toString (true, true, true, true);
+        auto purchaseTime = Time (1000 * (int64) transaction.transactionDate.timeIntervalSince1970);
 
         Purchase purchase { orderId, productId, packageName, purchaseTime, {} };
 
@@ -492,7 +491,7 @@ struct InAppPurchases::Pimpl
                                 purchases.add ({ { nsStringToJuce (transactionId),
                                                    nsStringToJuce (productId),
                                                    nsStringToJuce (bundleId),
-                                                   Time (purchaseTime).toString (true, true, true, true),
+                                                   Time (purchaseTime),
                                                    {} }, {} });
                             }
                         }
@@ -792,6 +791,13 @@ private:
                     }
                 }
             });
+
+#if JUCE_IOS && defined (__IPHONE_11_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0
+            addMethod (@selector (paymentQueue:shouldAddStorePayment:forProduct:), [] (id, SEL, SKPaymentQueue*, SKPayment*, SKProduct*) 
+            {
+                
+            });
+#endif
 
             registerClass();
         }

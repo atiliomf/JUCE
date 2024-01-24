@@ -78,8 +78,8 @@ public:
             in-app product was purchased. */
         String applicationBundleName;
 
-        /** Date of the purchase (in ISO8601 format). */
-        String purchaseTime;
+        /** Date and time of the purchase. */
+        Time purchaseTime;
 
         /** Android only: purchase token that should be used to consume purchase, provided that In-App product
             is consumable. */

@@ -670,7 +670,7 @@ DECLARE_JNI_CLASS (AndroidWindow, "android/view/Window")
 DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidWindow30, "android/view/Window", 30)
 #undef JNI_CLASS_MEMBERS
 
-#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \ 
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
  METHOD (setSystemBarsAppearance, "setSystemBarsAppearance", "(II)V")
 
 DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidWindowInsetsController, "android/view/WindowInsetsController", 30)

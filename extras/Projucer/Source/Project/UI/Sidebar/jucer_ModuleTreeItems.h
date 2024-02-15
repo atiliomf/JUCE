@@ -516,24 +516,26 @@ public:
 
     void showPopupMenu (Point<int> p) override
     {
-        PopupMenu moduleMenus;
-
+        PopupMenu menu;
+        
         const auto addModulesSubMenu = [&] (const auto& description, const auto& modules, auto rescan)
         {
-            PopupMenu menu;
+            PopupMenu subMenu;
 
             for (const auto& mod : modules)
             {
-                menu.addItem (PopupMenu::Item { mod.first }
+                subMenu.addItem (PopupMenu::Item { mod.first }
                                   .setID (-1)
                                   .setEnabled (! project.getEnabledModules().isModuleEnabled (mod.first))
                                   .setAction ([this, name = mod.first] { project.getEnabledModules().addModuleInteractive (name); }));
             }
 
-            menu.addSeparator();
-            menu.addItem (PopupMenu::Item { "Re-scan path" }.setID (-1).setAction (rescan));
-            moduleMenus.addSubMenu (description, menu);
+            subMenu.addSeparator();
+            subMenu.addItem (PopupMenu::Item { "Re-scan path" }.setID (-1).setAction (rescan));
+            menu.addSubMenu (description, subMenu);
         };
+        
+        menu.addSectionHeader ("Add a module:");
 
         addModulesSubMenu ("Global JUCE modules path",
                            ProjucerApplication::getApp().getJUCEPathModulesList().getAllModules(),
@@ -547,10 +549,8 @@ public:
                            project.getExporterPathsModulesList().getAllModules(),
                            [this] { project.rescanExporterPathModules(); });
 
-        PopupMenu menu;
-        menu.addSubMenu ("Add a module", moduleMenus);
         menu.addSeparator();
-        menu.addItem (PopupMenu::Item { "Add a module from a specified folder..." }
+        menu.addItem (PopupMenu::Item { "From a specified folder..." }
                           .setID (-1)
                           .setAction ([this] { project.getEnabledModules().addModuleFromUserSelectedFile(); }));
 

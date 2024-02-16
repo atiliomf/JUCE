@@ -262,8 +262,8 @@ StartPageComponent::StartPageComponent (std::function<void (std::unique_ptr<Proj
     addAndMakeVisible (openExistingButton);
     openExistingButton.setCommandToTrigger (&ProjucerApplication::getCommandManager(), CommandIDs::open, true);
 
-    addAndMakeVisible (reopenMostRecentButton);
-    reopenMostRecentButton.onClick = [&]()
+    addAndMakeVisible (openMostRecentButton);
+    openMostRecentButton.onClick = [&]()
     {
         ProjucerApplication::getApp().openFile (getAppSettings().recentFiles.getFile (0), nullptr);
     };
@@ -287,7 +287,7 @@ void StartPageComponent::resized()
     openExistingButton.setBounds (tabBounds.removeFromBottom (30).reduced (10, 0));
     tabBounds.removeFromBottom (5);
     
-    reopenMostRecentButton.setBounds (tabBounds.removeFromBottom (30).reduced (10, 0));
+    openMostRecentButton.setBounds (tabBounds.removeFromBottom (30).reduced (10, 0));
     tabBounds.removeFromBottom (5);
 
     tabs->setBounds (tabBounds);

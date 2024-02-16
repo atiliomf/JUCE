@@ -43,6 +43,7 @@ private:
     std::unique_ptr<ContentComponent> content;
     std::unique_ptr<ProjectTemplatesAndExamples> tabs;
 
+    TextButton reopenMostRecentButton { "Reopen Most Recent Project" };
     TextButton openExistingButton { "Open Existing Project..." };
 
     //==============================================================================

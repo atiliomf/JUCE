@@ -635,6 +635,14 @@ MultiTouchMapper<UITouch*> UIViewComponentPeer::currentTouches;
     {
         sendScreenBoundsUpdate (self);
     }];
+    
+    if (auto* peer = getViewPeer (self))
+    {
+        peer->setBounds ({(int)size.width, (int)size.height}, true);
+        peer->handleScreenSizeChange();
+        auto b = peer->getNonFullScreenBounds();
+        peer->setNonFullScreenBounds ({b.getHeight(), b.getWidth()});
+    }
 }
 
 - (BOOL) prefersStatusBarHidden

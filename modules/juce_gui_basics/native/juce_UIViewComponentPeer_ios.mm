@@ -349,10 +349,6 @@ struct CADisplayLinkDeleter
 
 - (JuceUIViewController*) init;
 
-- (NSUInteger) supportedInterfaceOrientations;
-- (BOOL) shouldAutorotateToInterfaceOrientation: (UIInterfaceOrientation) interfaceOrientation;
-- (void) willRotateToInterfaceOrientation: (UIInterfaceOrientation) toInterfaceOrientation duration: (NSTimeInterval) duration;
-- (void) didRotateFromInterfaceOrientation: (UIInterfaceOrientation) fromInterfaceOrientation;
 - (void) viewWillTransitionToSize: (CGSize) size withTransitionCoordinator: (id<UIViewControllerTransitionCoordinator>) coordinator;
 - (BOOL) prefersStatusBarHidden;
 - (UIStatusBarStyle) preferredStatusBarStyle;
@@ -601,31 +597,6 @@ MultiTouchMapper<UITouch*> UIViewComponentPeer::currentTouches;
     self = [super init];
 
     return self;
-}
-
-- (NSUInteger) supportedInterfaceOrientations
-{
-    return Orientations::getSupportedOrientations();
-}
-
-- (BOOL) shouldAutorotateToInterfaceOrientation: (UIInterfaceOrientation) interfaceOrientation
-{
-    return Desktop::getInstance().isOrientationEnabled (Orientations::convertToJuce (interfaceOrientation));
-}
-
-- (void) willRotateToInterfaceOrientation: (UIInterfaceOrientation) toInterfaceOrientation
-                                 duration: (NSTimeInterval) duration
-{
-    ignoreUnused (toInterfaceOrientation, duration);
-
-    [UIView setAnimationsEnabled: NO]; // disable this because it goes the wrong way and looks like crap.
-}
-
-- (void) didRotateFromInterfaceOrientation: (UIInterfaceOrientation) fromInterfaceOrientation
-{
-    ignoreUnused (fromInterfaceOrientation);
-    sendScreenBoundsUpdate (self);
-    [UIView setAnimationsEnabled: YES];
 }
 
 - (void) viewWillTransitionToSize: (CGSize) size withTransitionCoordinator: (id<UIViewControllerTransitionCoordinator>) coordinator

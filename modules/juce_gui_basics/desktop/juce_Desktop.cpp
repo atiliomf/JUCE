@@ -304,6 +304,9 @@ void Desktop::setKioskModeComponent (Component* componentToUse, bool allowMenusA
 
         if (auto* oldKioskComp = kioskModeComponent)
         {
+            if (auto* peer = ComponentPeer::getPeerFor (kioskModeComponent))
+                kioskComponentOriginalBounds = peer->getNonFullScreenBounds();
+                
             kioskModeComponent = nullptr; // (to make sure that isKioskMode() returns false when resizing the old one)
             setKioskComponent (oldKioskComp, false, allowMenusAndBars);
             oldKioskComp->setBounds (kioskComponentOriginalBounds);
@@ -317,6 +320,10 @@ void Desktop::setKioskModeComponent (Component* componentToUse, bool allowMenusA
             jassert (ComponentPeer::getPeerFor (kioskModeComponent) != nullptr);
 
             kioskComponentOriginalBounds = kioskModeComponent->getBounds();
+            
+            if (auto* peer = ComponentPeer::getPeerFor (kioskModeComponent))
+                peer->setNonFullScreenBounds (kioskModeComponent->getBounds());
+                
             setKioskComponent (kioskModeComponent, true, allowMenusAndBars);
         }
     }

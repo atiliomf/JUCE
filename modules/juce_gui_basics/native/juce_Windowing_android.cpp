@@ -1471,8 +1471,7 @@ public:
         {
             if (navBarsHidden || shouldBeFullScreen)
                 if (auto* display = Desktop::getInstance().getDisplays().getPrimaryDisplay())
-                    return navBarsHidden ? display->totalArea
-                                         : display->userArea;
+                    return display->totalArea;
 
             return lastNonFullscreenBounds.isEmpty() ? getBounds() : lastNonFullscreenBounds;
         }();

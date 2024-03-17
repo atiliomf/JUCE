@@ -1884,12 +1884,12 @@ void UIViewComponentPeer::setFullScreen (bool shouldBeFullScreen)
     }
 }
 
-void UIViewComponentPeer::updateScreenBounds()
+void UIViewComponentPeer::updateScreenBounds() // fix as suggested by peteatjuce
 {
     auto& desktop = Desktop::getInstance();
 
-    auto oldArea = component.getBounds();
-    auto oldDesktop = desktop.getDisplays().getPrimaryDisplay()->userArea;
+//   auto oldArea = component.getBounds();
+//   auto oldDesktop = desktop.getDisplays().getPrimaryDisplay()->userArea;
 
     forceDisplayUpdate();
 
@@ -1901,19 +1901,21 @@ void UIViewComponentPeer::updateScreenBounds()
     else if (! isSharedWindow)
     {
         auto newDesktop = desktop.getDisplays().getPrimaryDisplay()->userArea;
+        
+        component.setBounds (newDesktop);
 
-        if (newDesktop != oldDesktop)
-        {
-            // this will re-centre the window, but leave its size unchanged
-
-            auto centreRelX = (float) oldArea.getCentreX() / (float) oldDesktop.getWidth();
-            auto centreRelY = (float) oldArea.getCentreY() / (float) oldDesktop.getHeight();
-
-            auto x = ((int) ((float) newDesktop.getWidth()  * centreRelX)) - (oldArea.getWidth()  / 2);
-            auto y = ((int) ((float) newDesktop.getHeight() * centreRelY)) - (oldArea.getHeight() / 2);
-
-            component.setBounds (oldArea.withPosition (x, y));
-        }
+//        if (newDesktop != oldDesktop)
+//        {
+//            // this will re-centre the window, but leave its size unchanged
+//
+//            auto centreRelX = (float) oldArea.getCentreX() / (float) oldDesktop.getWidth();
+//            auto centreRelY = (float) oldArea.getCentreY() / (float) oldDesktop.getHeight();
+//
+//            auto x = ((int) ((float) newDesktop.getWidth()  * centreRelX)) - (oldArea.getWidth()  / 2);
+//            auto y = ((int) ((float) newDesktop.getHeight() * centreRelY)) - (oldArea.getHeight() / 2);
+//
+//            component.setBounds (oldArea.withPosition (x, y));
+//        }
     }
 
     [view setNeedsDisplay];

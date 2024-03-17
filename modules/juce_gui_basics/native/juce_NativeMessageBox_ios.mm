@@ -63,8 +63,8 @@ std::unique_ptr<ScopedMessageBoxInterface> ScopedMessageBoxInterface::create (co
 
                 [alert.get() addAction: action];
 
-                if (i == 0)
-                    [alert.get() setPreferredAction: action];
+//                if (i == 0)
+//                    [alert.get() setPreferredAction: action];  // do not make text of first button bold!
             }
 
             [iOSGlobals::currentlyFocusedPeer->controller presentViewController: alert.get()

@@ -47,7 +47,7 @@ struct InAppPurchases::Pimpl
         String getContentVersion() const override  { return nsStringToJuce (download.contentVersion); }
 
       #if JUCE_IOS
-        int64 getContentLength()   const override  { return download.contentLength; }
+        int64 getContentLength()   const override  { return download.expectedContentLength; }
         Status getStatus()         const override  { return SKDownloadStateToDownloadStatus (download.state); }
       #else
         int64 getContentLength()   const override

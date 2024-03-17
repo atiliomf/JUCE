@@ -1455,21 +1455,11 @@ public:
 
     void setFullScreen (bool shouldBeFullScreen) override
     {
-        if (shouldNavBarsBeHidden (shouldBeFullScreen))
-        {
-            if (isTimerRunning())
-                return;
-
-            startTimer (500);
-        }
-        else
-        {
-            setNavBarsHidden (false);
-        }
+        setNavBarsHidden (shouldNavBarsBeHidden (shouldBeFullScreen));
 
         auto newBounds = [&]
         {
-            if (navBarsHidden || shouldBeFullScreen)
+            if (shouldBeFullScreen)
                 if (auto* display = Desktop::getInstance().getDisplays().getPrimaryDisplay())
                     return display->totalArea;
 
@@ -2207,7 +2197,6 @@ private:
     //==============================================================================
     void timerCallback() override
     {
-        setNavBarsHidden (shouldNavBarsBeHidden (fullScreen));
         setFullScreen (fullScreen);
         stopTimer();
     }

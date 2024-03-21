@@ -37,18 +37,19 @@ public:
         : bounds (boundsToUse)
     {
         std::unique_ptr<ModalComponentManager::Callback> exitCallback (exitCallbackToUse);
-
+        
+        update();
+        
+        kioskModeComponent = Desktop::getInstance().getKioskModeComponent();
+        
+        if (kioskModeComponent != nullptr)
+            kioskModeComponent->addChildComponent (this);
+        else
+            addToDesktop (ComponentPeer::windowHasDropShadow);
+    
+        toFront (true);
         setAlwaysOnTop (true);
         setVisible (true);
-        addToDesktop (ComponentPeer::windowHasDropShadow);
-
-        if (bounds.isEmpty())
-            setBounds (0, 0, getParentWidth(), getParentHeight());
-        else
-            setBounds (bounds);
-
-        toFront (true);
-        setOpaque (true);
 
         controller = [[CABTMIDICentralViewController alloc] init];
         nativeSelectorComponent.setView ([controller view]);
@@ -80,6 +81,8 @@ private:
     {
         if (bounds.isEmpty())
         {
+            setBounds (0, 0, getParentWidth(), getParentHeight());
+            
             const int pw = getParentWidth();
             const int ph = getParentHeight();
 
@@ -89,6 +92,7 @@ private:
         }
         else
         {
+            setBounds (bounds);
             nativeSelectorComponent.setBounds (bounds.withZeroOrigin());
         }
     }
@@ -102,6 +106,7 @@ private:
     CABTMIDICentralViewController* controller;
     UIViewComponent nativeSelectorComponent;
     Rectangle<int> bounds;
+    Component* kioskModeComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BluetoothMidiSelectorOverlay)
 };

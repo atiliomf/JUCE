@@ -273,15 +273,15 @@ private:
 
     static String getDeviceStatusString (DeviceStatus deviceStatus) noexcept
     {
-        if (deviceStatus == AndroidBluetoothMidiDevice::offline)        return "Offline";
-        if (deviceStatus == AndroidBluetoothMidiDevice::connected)      return "Connected";
-        if (deviceStatus == AndroidBluetoothMidiDevice::disconnected)   return "Not connected";
-        if (deviceStatus == AndroidBluetoothMidiDevice::connecting)     return "Connecting...";
-        if (deviceStatus == AndroidBluetoothMidiDevice::disconnecting)  return "Disconnecting...";
+        if (deviceStatus == AndroidBluetoothMidiDevice::offline)        return TRANS ("Offline");
+        if (deviceStatus == AndroidBluetoothMidiDevice::connected)      return TRANS ("Connected");
+        if (deviceStatus == AndroidBluetoothMidiDevice::disconnected)   return TRANS ("Not connected");
+        if (deviceStatus == AndroidBluetoothMidiDevice::connecting)     return TRANS ("Connecting...");
+        if (deviceStatus == AndroidBluetoothMidiDevice::disconnecting)  return TRANS ("Disconnecting...");
 
         // unknown device state!
         jassertfalse;
-        return "Status unknown";
+        return TRANS ("Status unknown");
     }
 
     //==============================================================================
@@ -405,17 +405,21 @@ public:
 
         AndroidBluetoothMidiInterface::startStopScan (true);
 
+        update();
+        
+        auto& desktop = Desktop::getInstance();
+        enabledOrientations = desktop.getOrientationsEnabled();
+        desktop.setOrientationsEnabled (desktop.getCurrentOrientation());
+        kioskModeComponent = desktop.getKioskModeComponent();
+        
+        if (kioskModeComponent != nullptr)
+            kioskModeComponent->addChildComponent (this);
+        else
+            addToDesktop (ComponentPeer::windowHasDropShadow);
+    
+        toFront (true);
         setAlwaysOnTop (true);
         setVisible (true);
-        addToDesktop (ComponentPeer::windowHasDropShadow);
-
-        if (bounds.isEmpty())
-            setBounds (0, 0, getParentWidth(), getParentHeight());
-        else
-            setBounds (bounds);
-
-        toFront (true);
-        setOpaque (! bounds.isEmpty());
 
         addAndMakeVisible (bluetoothDevicesList);
         enterModalState (true, exitCallback.release(), true);
@@ -423,12 +427,13 @@ public:
 
     ~BluetoothMidiSelectorOverlay() override
     {
+        Desktop::getInstance().setOrientationsEnabled (enabledOrientations);
         AndroidBluetoothMidiInterface::startStopScan (false);
     }
 
     void paint (Graphics& g) override
     {
-        g.fillAll (bounds.isEmpty() ? Colours::black.withAlpha (0.6f) : Colours::black);
+        g.fillAll (Colours::black.withAlpha (0.5f));
 
         g.setColour (Colour (0xffdfdfdf));
         Rectangle<int> overlayBounds = getOverlayBounds();
@@ -436,16 +441,16 @@ public:
 
         g.setColour (Colours::black);
         g.setFont (16);
-        g.drawText ("Bluetooth MIDI Devices",
+        g.drawText (TRANS ("Bluetooth MIDI Devices"),
                     overlayBounds.removeFromTop (20).reduced (3, 3),
                     Justification::topLeft, true);
 
-//        overlayBounds.removeFromTop (2);
-//
-//        g.setFont (12);
-//        g.drawText ("tap to connect/disconnect",
-//                    overlayBounds.removeFromTop (18).reduced (3, 3),
-//                    Justification::topLeft, true);
+        overlayBounds.removeFromTop (2);
+
+        g.setFont (12);
+        g.drawText (TRANS ("tap on a device on the list to connect/disconnect"),
+                    overlayBounds.removeFromTop (18).reduced (3, 3),
+                    Justification::topLeft, true);
     }
 
     void inputAttemptWhenModal() override           { exitModalState (0); }
@@ -469,18 +474,15 @@ private:
 
     Rectangle<int> getOverlayBounds() const noexcept
     {
-        if (bounds.isEmpty())
-        {
-            const int pw = getParentWidth();
-            const int ph = getParentHeight();
-
-            return Rectangle<int> (pw, ph).withSizeKeepingCentre (jmin (400, pw - 14),
-                                                                  jmin (300, ph - 40));
-        }
-
-        return bounds.withZeroOrigin();
+        const int w = getWidth();
+        const int h = getHeight();
+        
+        return Rectangle<int> (w, h).withSizeKeepingCentre (jmin (400, w - 14),
+                                                            jmin (300, h - 40));
     }
 
+    Component* kioskModeComponent;
+    int enabledOrientations;
     AndroidBluetoothMidiDevicesListBox bluetoothDevicesList;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BluetoothMidiSelectorOverlay)

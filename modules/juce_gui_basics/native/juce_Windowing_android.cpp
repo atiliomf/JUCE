@@ -998,10 +998,12 @@ namespace
         SYSTEM_UI_FLAG_LOW_PROFILE = 1,
         SYSTEM_UI_FLAG_HIDE_NAVIGATION = 2,
         SYSTEM_UI_FLAG_FULLSCREEN = 4,
+        SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR = 16,
         SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION = 512,
         SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN = 1024,
         SYSTEM_UI_FLAG_IMMERSIVE = 2048,
-        SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096
+        SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096,
+        SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 8192
     };
 
     constexpr int fullScreenFlags = SYSTEM_UI_FLAG_HIDE_NAVIGATION | SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
@@ -1290,7 +1292,8 @@ public:
             if (supportsDisplayCutout())
             {
                 if (const auto fieldID = AndroidWindowManagerLayoutParams28.layoutInDisplayCutoutMode)
-                    env->SetIntField (windowLayoutParams, fieldID, LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS);
+                    env->SetIntField (windowLayoutParams, fieldID, android_get_device_api_level() < 30 ? LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                                                                                                       : LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS);
             }
 
             if (Desktop::getInstance().getKioskModeComponent() != nullptr)
@@ -1927,31 +1930,41 @@ public:
 private:
     void appStyleChanged() override
     {
-        if (getAndroidSDKVersion() < 30)
-            return;
-    
-        constexpr auto APPEARANCE_LIGHT_STATUS_BARS = 0x00000008;
-        constexpr auto APPEARANCE_LIGHT_NAVIGATION_BARS = 0x00000010;
-        
-        constexpr auto WHITE = 0xffffffff;
-        constexpr auto BLACK = 0xff000000;
-    
         LocalRef<jobject> activity (getMainActivity());
-
+        
         if (activity != nullptr)
         {
             auto* env = getEnv();
             
+            constexpr auto WHITE = 0xffffffff;
+            constexpr auto BLACK = 0xff000000;
+            
             LocalRef<jobject> mainWindow (env->CallObjectMethod (activity.get(), AndroidActivity.getWindow));
-            LocalRef<jobject> controller (env->CallObjectMethod (mainWindow.get(), AndroidWindow30.getInsetsController));
-
-            env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance, style == Style::light ? APPEARANCE_LIGHT_STATUS_BARS : 0, APPEARANCE_LIGHT_STATUS_BARS);
-
-            env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance, style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
             
             env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, style == Style::light ? WHITE : BLACK);
-            
             env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, style == Style::light ? WHITE : BLACK);
+            
+            if (getAndroidSDKVersion() >= 30)
+            {
+                constexpr auto APPEARANCE_LIGHT_STATUS_BARS = 0x00000008;
+                constexpr auto APPEARANCE_LIGHT_NAVIGATION_BARS = 0x00000010;
+                
+                LocalRef<jobject> controller (env->CallObjectMethod (mainWindow.get(), AndroidWindow30.getInsetsController));
+                
+                env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
+                                     style == Style::light ? APPEARANCE_LIGHT_STATUS_BARS : 0, APPEARANCE_LIGHT_STATUS_BARS);
+                
+                env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
+                                     style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
+            }
+            else
+            {
+                constexpr auto LIGHT_BARS = SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                
+                LocalRef<jobject> decorView (env->CallObjectMethod (mainWindow.get(), AndroidWindow.getDecorView));
+                
+                env->CallVoidMethod (decorView.get(), AndroidView.setSystemUiVisibility, style == Style::light ? LIGHT_BARS : 0);
+            }
         }
     }         
 
@@ -2244,6 +2257,7 @@ private:
     static constexpr int FLAG_NOT_TOUCH_MODAL = 0x20, FLAG_LAYOUT_IN_SCREEN = 0x100, FLAG_LAYOUT_NO_LIMITS = 0x200;
     static constexpr int PIXEL_FORMAT_OPAQUE = -1, PIXEL_FORMAT_TRANSPARENT = -2;
     static constexpr int LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS = 0x3;
+    static constexpr int LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES = 0x1;
 
     GlobalRef view, viewGroup, buffer;
     bool viewGroupIsWindow = false, fullScreen = false, navBarsHidden = false;

@@ -1292,8 +1292,8 @@ public:
             if (supportsDisplayCutout())
             {
                 if (const auto fieldID = AndroidWindowManagerLayoutParams28.layoutInDisplayCutoutMode)
-                    env->SetIntField (windowLayoutParams, fieldID, android_get_device_api_level() < 30 ? LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                                                                                                       : LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS);
+                    env->SetIntField (windowLayoutParams, fieldID, getAndroidSDKVersion() < 30 ? LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                                                                                               : LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS);
             }
 
             if (Desktop::getInstance().getKioskModeComponent() != nullptr)
@@ -1935,14 +1935,7 @@ private:
         if (activity != nullptr)
         {
             auto* env = getEnv();
-            
-            constexpr auto WHITE = 0xffffffff;
-            constexpr auto BLACK = 0xff000000;
-            
             LocalRef<jobject> mainWindow (env->CallObjectMethod (activity.get(), AndroidActivity.getWindow));
-            
-            env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, style == Style::light ? WHITE : BLACK);
-            env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, style == Style::light ? WHITE : BLACK);
             
             if (getAndroidSDKVersion() >= 30)
             {
@@ -1959,14 +1952,37 @@ private:
             }
             else
             {
-                constexpr auto LIGHT_BARS = SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                constexpr auto WHITE = 0xffffffff;
+                constexpr auto BLACK = 0xff000000;
+                
+                env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, style == Style::light ? WHITE : BLACK);
+                env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, style == Style::light ? WHITE : BLACK);
                 
                 LocalRef<jobject> decorView (env->CallObjectMethod (mainWindow.get(), AndroidWindow.getDecorView));
+                env->CallVoidMethod (decorView.get(), AndroidView.setSystemUiVisibility, (navBarsHidden ? (jint) (getFullscreenFlags())
+                                                                                                        : (jint) (getNonFullscreenFlags())));
                 
-                env->CallVoidMethod (decorView.get(), AndroidView.setSystemUiVisibility, style == Style::light ? LIGHT_BARS : 0);
+                LocalRef<jobject> rootView (env->CallObjectMethod (decorView.get(), AndroidView.getRootView));
+                env->CallVoidMethod (rootView.get(), AndroidView.setBackgroundColor, style == Style::light ? WHITE : BLACK);
             }
         }
     }         
+    
+    int getFullscreenFlags()
+    {
+        if (getAndroidSDKVersion() >= 23 && getAndroidSDKVersion() < 30 && style == Style::light)
+            return SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR | fullScreenFlags;
+        
+        return fullScreenFlags;
+    }
+    
+    int getNonFullscreenFlags()
+    {
+        if (getAndroidSDKVersion() >= 23 && getAndroidSDKVersion() < 30 && style == Style::light)
+            return SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        
+        return 0;
+    }
 
     template <auto Member>
     static void mouseCallbackWrapper (JNIEnv*, AndroidComponentPeer& t, jint i, jfloat x, jfloat y, jlong time) { return (t.*Member) (i, Point<float> { x, y }, time); }
@@ -2232,9 +2248,9 @@ private:
         if (navBarsHidden != hidden)
         {
             navBarsHidden = hidden;
-
-            view.callVoidMethod (ComponentPeerView.setSystemUiVisibilityCompat,
-                                 (navBarsHidden ? (jint) (fullScreenFlags) : (jint) (SYSTEM_UI_FLAG_VISIBLE)));
+            //appStyleChanged();
+            view.callVoidMethod (ComponentPeerView.setSystemUiVisibilityCompat, (navBarsHidden ? (jint) (getFullscreenFlags())
+                                                                                               : (jint) (getNonFullscreenFlags())));
         }
     }
 

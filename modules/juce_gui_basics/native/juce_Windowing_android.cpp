@@ -2248,7 +2248,6 @@ private:
         if (navBarsHidden != hidden)
         {
             navBarsHidden = hidden;
-            //appStyleChanged();
             view.callVoidMethod (ComponentPeerView.setSystemUiVisibilityCompat, (navBarsHidden ? (jint) (getFullscreenFlags())
                                                                                                : (jint) (getNonFullscreenFlags())));
         }

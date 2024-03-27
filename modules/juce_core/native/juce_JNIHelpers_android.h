@@ -635,6 +635,7 @@ DECLARE_JNI_CLASS (AndroidUri, "android/net/Uri")
  METHOD (getRootView,               "getRootView",               "()Landroid/view/View;") \
  METHOD (addOnLayoutChangeListener, "addOnLayoutChangeListener", "(Landroid/view/View$OnLayoutChangeListener;)V") \
  METHOD (announceForAccessibility,  "announceForAccessibility",  "(Ljava/lang/CharSequence;)V")  \
+ METHOD (setBackgroundColor,        "setBackgroundColor",        "(I)V") \
 
 DECLARE_JNI_CLASS (AndroidView, "android/view/View")
 #undef JNI_CLASS_MEMBERS
@@ -660,7 +661,6 @@ DECLARE_JNI_CLASS (AndroidViewGroup, "android/view/ViewGroup")
  METHOD (clearFlags,   "clearFlags",         "(I)V") \
  METHOD (setStatusBarColor, "setStatusBarColor", "(I)V") \
  METHOD (setNavigationBarColor, "setNavigationBarColor", "(I)V") \
- METHOD (setNavigationBarContrastEnforced, "setNavigationBarContrastEnforced", "(Z)V")
 
 DECLARE_JNI_CLASS (AndroidWindow, "android/view/Window")
 #undef JNI_CLASS_MEMBERS

@@ -56,10 +56,6 @@ profile
 **/doxygen/doc
 **/doxygen/build
 **/.idea
-extras/Projucer/JUCECompileEngine.dylib
-extras/Projucer/Builds
-examples/DemoRunner/Builds
-examples/DemoRunner/DemoRunner.jucer
 
 .idea
 **/cmake-build*
@@ -71,7 +67,13 @@ CMakeUserPresets.json
 
 Projucer.app
 
-/examples
+**/examples
+**/extras
+
+extras/Projucer/JUCECompileEngine.dylib
+extras/Projucer/Builds
+
+examples/DemoRunner/Builds
 examples/DemoRunner/DemoRunner.jucer
 examples/DemoRunner/Builds/MacOSX/DemoRunner.xcodeproj/project.pbxproj
 examples/DemoRunner/Builds/iOS/DemoRunner.xcodeproj/project.pbxproj
@@ -79,3 +81,6 @@ examples/DemoRunner/Builds/iOS/App.entitlements
 examples/DemoRunner/Builds/Android/app/src/main/AndroidManifest.xml
 examples/DemoRunner/DemoRunner.jucer
 extras/Projucer/Builds/MacOSX/Projucer.xcodeproj/project.pbxproj
+examples/DemoRunner/DemoRunner.jucer
+/examples
+/examples/DemoRunner

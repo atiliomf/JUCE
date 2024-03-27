@@ -63,13 +63,14 @@ std::unique_ptr<ScopedMessageBoxInterface> ScopedMessageBoxInterface::create (co
 
                 [alert.get() addAction: action];
 
+//                This makes the first button bold, which it is not the usual iOS behaviour:
 //                if (i == 0)
-//                    [alert.get() setPreferredAction: action];  // do not make text of first button bold!
+//                    [alert.get() setPreferredAction: action];
             }
 
             [iOSGlobals::currentlyFocusedPeer->controller presentViewController: alert.get()
                                                                        animated: YES
-                                                                     completion: nil];
+                                                                     completion: nil];y
         }
 
         int runSync() override

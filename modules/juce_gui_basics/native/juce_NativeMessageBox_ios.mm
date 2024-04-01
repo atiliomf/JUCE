@@ -70,7 +70,7 @@ std::unique_ptr<ScopedMessageBoxInterface> ScopedMessageBoxInterface::create (co
 
             [iOSGlobals::currentlyFocusedPeer->controller presentViewController: alert.get()
                                                                        animated: YES
-                                                                     completion: nil];y
+                                                                     completion: nil];
         }
 
         int runSync() override

@@ -1955,9 +1955,17 @@ private:
                 constexpr auto WHITE = 0xffffffff;
                 constexpr auto BLACK = 0xff000000;
                 
-                env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, style == Style::light ? WHITE : BLACK);
-                env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, style == Style::light ? WHITE : BLACK);
-                
+                if (getAndroidSDKVersion() < 27)
+                {
+                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, BLACK);
+                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, BLACK);
+                }
+                else
+                {
+                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, style == Style::light ? WHITE : BLACK);
+                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, style == Style::light ? WHITE : BLACK);
+                }
+
                 LocalRef<jobject> decorView (env->CallObjectMethod (mainWindow.get(), AndroidWindow.getDecorView));
                 env->CallVoidMethod (decorView.get(), AndroidView.setSystemUiVisibility, (navBarsHidden ? (jint) (getFullscreenFlags())
                                                                                                         : (jint) (getNonFullscreenFlags())));
@@ -1970,7 +1978,7 @@ private:
     
     int getFullscreenFlags()
     {
-        if (getAndroidSDKVersion() >= 23 && getAndroidSDKVersion() < 30 && style == Style::light)
+        if (getAndroidSDKVersion() >= 27 && getAndroidSDKVersion() < 30 && style == Style::light)
             return SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR | fullScreenFlags;
         
         return fullScreenFlags;
@@ -1978,7 +1986,7 @@ private:
     
     int getNonFullscreenFlags()
     {
-        if (getAndroidSDKVersion() >= 23 && getAndroidSDKVersion() < 30 && style == Style::light)
+        if (getAndroidSDKVersion() >= 27 && getAndroidSDKVersion() < 30 && style == Style::light)
             return SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
         
         return 0;

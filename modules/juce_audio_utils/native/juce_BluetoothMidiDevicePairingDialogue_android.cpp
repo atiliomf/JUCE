@@ -448,7 +448,7 @@ public:
         overlayBounds.removeFromTop (2);
 
         g.setFont (12);
-        g.drawText (TRANS ("tap on a device on the list to connect/disconnect"),
+        g.drawText (TRANS ("Tap on a device on the list to connect/disconnect"),
                     overlayBounds.removeFromTop (18).reduced (3, 3),
                     Justification::topLeft, true);
     }

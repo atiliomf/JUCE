@@ -1904,22 +1904,22 @@ void UIViewComponentPeer::updateScreenBounds()
     {
         auto newDesktop = desktop.getDisplays().getPrimaryDisplay()->userArea;
         
-        if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion: (NSOperatingSystemVersion){16, 0, 0}])
-        {
-            if (newDesktop != oldDesktop)
-            {
-                // this will re-centre the window, but leave its size unchanged
-
-                auto centreRelX = (float) oldArea.getCentreX() / (float) oldDesktop.getWidth();
-                auto centreRelY = (float) oldArea.getCentreY() / (float) oldDesktop.getHeight();
-
-                auto x = ((int) ((float) newDesktop.getWidth()  * centreRelX)) - (oldArea.getWidth()  / 2);
-                auto y = ((int) ((float) newDesktop.getHeight() * centreRelY)) - (oldArea.getHeight() / 2);
-
-                component.setBounds (oldArea.withPosition (x, y));
-            }
-        }
-        else
+//        if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion: (NSOperatingSystemVersion){16, 0, 0}])
+//        {
+//            if (newDesktop != oldDesktop)
+//            {
+//                // this will re-centre the window, but leave its size unchanged
+//
+//                auto centreRelX = (float) oldArea.getCentreX() / (float) oldDesktop.getWidth();
+//                auto centreRelY = (float) oldArea.getCentreY() / (float) oldDesktop.getHeight();
+//
+//                auto x = ((int) ((float) newDesktop.getWidth()  * centreRelX)) - (oldArea.getWidth()  / 2);
+//                auto y = ((int) ((float) newDesktop.getHeight() * centreRelY)) - (oldArea.getHeight() / 2);
+//
+//                component.setBounds (oldArea.withPosition (x, y));
+//            }
+//        }
+//        else
         {
             component.setBounds (newDesktop); // fix for rotation issue as suggested by peteatjuce
         }

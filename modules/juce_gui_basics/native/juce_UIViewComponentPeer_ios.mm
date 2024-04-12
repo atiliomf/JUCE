@@ -1890,8 +1890,8 @@ void UIViewComponentPeer::updateScreenBounds()
 {
     auto& desktop = Desktop::getInstance();
 
-    auto oldArea = component.getBounds();
-    auto oldDesktop = desktop.getDisplays().getPrimaryDisplay()->userArea;
+//    auto oldArea = component.getBounds();
+//    auto oldDesktop = desktop.getDisplays().getPrimaryDisplay()->userArea;
 
     forceDisplayUpdate();
 
@@ -1920,9 +1920,9 @@ void UIViewComponentPeer::updateScreenBounds()
 //            }
 //        }
 //        else
-        {
+//        {
             component.setBounds (newDesktop); // fix for rotation issue as suggested by peteatjuce
-        }
+//        }
     }
 
     [view setNeedsDisplay];

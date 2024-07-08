@@ -690,4 +690,139 @@ String audioManagerGetProperty (const String& property)
     return {};
 }
 
+//==============================================================================
+
+bool isBluetoothScoDeviceConnected()
+{
+    auto* env = getEnv();
+    
+    auto audioManagerClass = (jclass) env->FindClass ("android/media/AudioManager");
+
+    if (audioManagerClass == nullptr)
+        return false;
+
+    auto audioManager = env->CallObjectMethod (getAppContext().get(), AndroidContext.getSystemService, javaString ("audio").get());
+    
+    bool offCallSCOisSupported = env->CallBooleanMethod (audioManager, AndroidAudioManager.isBluetoothScoAvailableOffCall);
+    
+    if (! offCallSCOisSupported)
+        return false;
+    
+    auto devices = LocalRef<jobjectArray> ((jobjectArray) env->CallObjectMethod (audioManager,
+                                                                                 AndroidAudioManager.getDevices,
+                                                                                 2)); // outputDevices
+
+    const int numDevices = env->GetArrayLength (devices.get());
+
+    for (int i = 0; i < numDevices; ++i)
+    {
+        auto device = (jobject) env->GetObjectArrayElement (devices.get(), i);
+        auto deviceTypeInt = env->CallIntMethod (device, AndroidAudioDevicesInfo.getType);
+        
+        if (deviceTypeInt == 7)
+            return true;
+    }
+        
+    return false;
+}
+
+String getBluetoothScoState()
+{
+    auto* env = getEnv();
+    
+    auto intentFilter = env->NewObject (AndroidIntentFilter,
+                                        AndroidIntentFilter.constructWithAction,
+                                        javaString ("android.media.ACTION_SCO_AUDIO_STATE_UPDATED").get());
+    
+    auto intent = env->CallObjectMethod (getAppContext().get(),
+                                         AndroidContext.registerReceiver,
+                                         nullptr,
+                                         intentFilter);
+                                                               
+    auto state = env->CallIntMethod (intent,
+                                     AndroidIntent.getIntExtra,
+                                     javaString ("android.media.extra.SCO_AUDIO_STATE").get(),
+                                     -1);
+                               
+    return state == 0 ? "disconnected"
+         : state == 1 ? "connected"
+         : state == 2 ? "connecting"
+                      : "unknown";
+}
+
+void setCommunicationModeNormal()
+{
+    auto* env = getEnv();
+    
+    auto audioManager = LocalRef<jobject> (env->CallObjectMethod (getAppContext().get(),
+                                                                  AndroidContext.getSystemService,
+                                                                  javaString ("audio").get()));
+                                                                  
+    env->CallVoidMethod (audioManager, AndroidAudioManager.setMode, 0); // MODE_NORMAL                                                             
+}
+
+void setBluetoothSco (bool shouldSet)
+{
+    auto* env = getEnv();
+
+    jclass audioManagerClass = env->FindClass ("android/media/AudioManager");
+
+    if (audioManagerClass == nullptr)
+        return;
+
+    auto audioManager = LocalRef<jobject> (env->CallObjectMethod (getAppContext().get(),
+                                                                  AndroidContext.getSystemService,
+                                                                  javaString ("audio").get()));
+
+    bool offCallSCOisSupported = env->CallBooleanMethod (audioManager, AndroidAudioManager.isBluetoothScoAvailableOffCall);
+    
+    if (! offCallSCOisSupported)
+        return;
+        
+    env->CallVoidMethod (audioManager, AndroidAudioManager.setMode, shouldSet ? 3 : 0); // MODE_IN_COMMUNICATION : MODE_NORMAL
+
+    if (getAndroidSDKVersion() < 34)
+    {
+        if (shouldSet)
+        {
+            env->CallVoidMethod (audioManager, AndroidAudioManager.startBluetoothSco);
+        }
+        else
+        {
+            env->CallVoidMethod (audioManager, AndroidAudioManager.stopBluetoothSco);
+        }
+        
+        if (getAndroidSDKVersion() < 31)
+            return;
+    }
+    
+    auto devices = LocalRef<jobjectArray> ((jobjectArray) env->CallObjectMethod (audioManager,
+                                                                                 AndroidAudioManager.getDevices,
+                                                                                 2)); // outputDevices
+
+    const int numDevices = env->GetArrayLength (devices.get());
+
+    for (int i = 0; i < numDevices; ++i)
+    {
+        auto device = (jobject) env->GetObjectArrayElement (devices.get(), i);
+        auto deviceTypeInt = env->CallIntMethod (device, AndroidAudioDevicesInfo.getType);
+        
+        if (deviceTypeInt == 7) // Bluetooth SCO device
+        {
+            if (shouldSet)
+            {
+                 env->CallBooleanMethod (audioManager, AndroidAudioManager31.setCommunicationDevice, device);
+            }
+            else
+            {
+                env->CallBooleanMethod (audioManager, AndroidAudioManager31.clearCommunicationDevice, device);
+            }
+        
+            env->CallVoidMethod (audioManager, AndroidAudioManager.setMode, shouldSet ? 3 : 0);
+            return;
+        }
+    }
+}
+
+
 }

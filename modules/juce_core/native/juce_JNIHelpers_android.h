@@ -360,12 +360,55 @@ DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidFragment, "android/app/Fragment", 11)
 DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidAudioAttributesBuilder, "android/media/AudioAttributes$Builder", 21)
 #undef JNI_CLASS_MEMBERS
 
-#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
-  METHOD (abandonAudioFocus, "abandonAudioFocus", "(Landroid/media/AudioManager$OnAudioFocusChangeListener;)I") \
-  METHOD (requestAudioFocus, "requestAudioFocus", "(Landroid/media/AudioManager$OnAudioFocusChangeListener;II)I")
 
+// vvvvvvvvvvvvvvvvvvvvvvvvv
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+  METHOD (abandonAudioFocus,                "abandonAudioFocus",                "(Landroid/media/AudioManager$OnAudioFocusChangeListener;)I") \
+  METHOD (requestAudioFocus,                "requestAudioFocus",                "(Landroid/media/AudioManager$OnAudioFocusChangeListener;II)I") \
+  METHOD (getProperty,                      "getProperty",                      "(Ljava/lang/String;)Ljava/lang/String;") \
+  METHOD (getDevices,                       "getDevices",                       "(I)[Landroid/media/AudioDeviceInfo;") \
+  METHOD (isBluetoothScoAvailableOffCall,   "isBluetoothScoAvailableOffCall",   "()Z") \
+  METHOD (startBluetoothSco,                "startBluetoothSco",                "()V") \
+  METHOD (stopBluetoothSco,                 "stopBluetoothSco",                 "()V") \
+  METHOD (setMode,                          "setMode",                          "(I)V") \
+  METHOD (getStreamMaxVolume,               "getStreamMaxVolume",               "(I)I") \
+  METHOD (getStreamVolume,                  "getStreamVolume",                  "(I)I") \
+  METHOD (setStreamVolume,                  "setStreamVolume",                  "(III)V") \
+  METHOD (adjustVolume,                     "adjustVolume",                     "(II)V")
+  
 DECLARE_JNI_CLASS (AndroidAudioManager, "android/media/AudioManager")
 #undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+  METHOD (setCommunicationDevice,   "setCommunicationDevice",   "(Landroid/media/AudioDeviceInfo;)Z") \
+  METHOD (clearCommunicationDevice, "clearCommunicationDevice", "()V")
+
+DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidAudioManager31, "android/media/AudioManager", 31)
+#undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+  METHOD (getProductName,   "getProductName",   "()Ljava/lang/CharSequence;") \
+  METHOD (getType,          "getType",          "()I") \
+  METHOD (getId,            "getId",            "()I") \
+  METHOD (getSampleRates,   "getSampleRates",   "()[I") \
+  METHOD (getChannelCounts, "getChannelCounts", "()[I") \
+  METHOD (isSource,         "isSource",         "()Z")
+
+DECLARE_JNI_CLASS (AndroidAudioDevicesInfo, "android/media/AudioDeviceInfo")
+#undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+  METHOD (constructor,                     "<init>",      "()V") \
+  METHOD (constructWithAction,             "<init>",      "(Ljava/lang/String;)V") \
+  METHOD (addAction,                       "addAction",   "(Ljava/lang/String;)V")
+
+DECLARE_JNI_CLASS (AndroidIntentFilter, "android/content/IntentFilter")
+#undef JNI_CLASS_MEMBERS
+
+// ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
 
 #define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
   STATICMETHOD (createBitmap,     "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;") \
@@ -1168,5 +1211,12 @@ constexpr auto generateCallbackImpl (Result (*) (JNIEnv*, const Class&, Args...)
 // 'host' argument points to an object on which it is valid to call Fn
 template <auto Fn>
 inline constexpr auto generatedCallback = detail::generateCallbackImpl<Fn> (Fn);
+
+//==============================================================================
+
+bool isBluetoothScoDeviceConnected();
+String getBluetoothScoState();
+void setBluetoothSco (bool shouldSet);
+void setCommunicationModeNormal();
 
 } // namespace juce

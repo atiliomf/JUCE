@@ -39,6 +39,7 @@ public:
     Array<int> getAvailableBufferSizes() override;
 
     bool setAudioPreprocessingEnabled (bool) override;
+    bool enableBluetoothSCO (bool) override;
 
     //==============================================================================
     bool isPlaying() override;

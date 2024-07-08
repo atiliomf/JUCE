@@ -257,7 +257,9 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
         // We need to activate the audio session here to obtain the available sample rates and buffer sizes,
         // but if we don't set a category first then background audio will always be stopped. This category
         // may be changed later.
-        setAudioSessionCategory (AVAudioSessionCategoryPlayAndRecord);
+        
+        // CHANGE: to avoid background audio played by other apps being stopped if these do not support input channels
+        setAudioSessionCategory (AVAudioSessionCategoryPlayback);
 
         setAudioSessionActive (true);
         updateHardwareInfo();
@@ -285,6 +287,7 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
         if (category == AVAudioSessionCategoryPlayAndRecord)
         {
             options |= AVAudioSessionCategoryOptionDefaultToSpeaker
+                    // CHANGE: to allow Bluetooth HFP to be set programatically
                     // | AVAudioSessionCategoryOptionAllowBluetooth
                      | AVAudioSessionCategoryOptionAllowAirPlay;
 
@@ -542,6 +545,31 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
             if (lastCallback != nullptr)
                 lastCallback->audioDeviceStopped();
         }
+    }
+    
+    // CHANGE: to allow Bluetooth HFP to be set programatically
+    bool isBluetoothDevice()
+    {
+        for (AVAudioSessionPortDescription* port in [AVAudioSession sharedInstance].currentRoute.outputs)
+            if ([port.portType containsString: @"Bluetooth"])
+                return true;
+        
+        return false;
+    }
+    
+    bool enableBluetoothSCO (bool enable)
+    {
+        NSString* mode = (enable && isBluetoothDevice() ? AVAudioSessionModeVoiceChat
+                                                        : AVAudioSessionModeDefault);
+        NSError* error = nil;
+        
+        auto session = [AVAudioSession sharedInstance];
+        
+        [session setMode: mode
+                   error: &error];
+        
+        return session.mode == mode
+                   && error != nil;
     }
 
     bool setAudioPreprocessingEnabled (bool enable)
@@ -1417,6 +1445,7 @@ Array<double> iOSAudioIODevice::getAvailableSampleRates()           { return pim
 Array<int> iOSAudioIODevice::getAvailableBufferSizes()              { return pimpl->availableBufferSizes; }
 
 bool iOSAudioIODevice::setAudioPreprocessingEnabled (bool enabled)  { return pimpl->setAudioPreprocessingEnabled (enabled); }
+bool iOSAudioIODevice::enableBluetoothSCO (bool enabled)            { return pimpl->enableBluetoothSCO (enabled); }
 
 bool iOSAudioIODevice::isPlaying()                                  { return pimpl->isRunning && pimpl->callback != nullptr; }
 bool iOSAudioIODevice::isOpen()                                     { return pimpl->isRunning; }

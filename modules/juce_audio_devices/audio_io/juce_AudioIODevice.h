@@ -330,6 +330,12 @@ public:
     */
     virtual bool setAudioPreprocessingEnabled (bool shouldBeEnabled);
 
+    /** iOS only. This will set Bluetooth to SCO mode (HFP Profile) instead of the default ACL mode.
+        This mode is normally used for telephony and has lower latency but also reduced audio quality.
+        If the device doesn't support this operation, it'll return false.
+    */
+    virtual bool enableBluetoothSCO (bool shouldBeEnabled);
+
     //==============================================================================
     /** Returns the number of under- or over runs reported by the OS since
         playback/recording has started.

@@ -1,24 +1,33 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library.
-   Copyright (c) 2022 - Raw Material Software Limited
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
 
-   JUCE is an open source library subject to commercial or open-source
+   JUCE is an open source framework subject to commercial or open source
    licensing.
 
-   By using JUCE, you agree to the terms of both the JUCE 7 End-User License
-   Agreement and JUCE Privacy Policy.
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
 
-   End User License Agreement: www.juce.com/juce-7-licence
-   Privacy Policy: www.juce.com/juce-privacy-policy
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
-   Or: You may also use this code under the terms of the GPL v3 (see
-   www.gnu.org/licenses).
+   Or:
 
-   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
-   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
-   DISCLAIMED.
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
 
   ==============================================================================
 */
@@ -27,10 +36,6 @@
 #include <juce_audio_plugin_client/detail/juce_CheckSettingMacros.h>
 
 #if JucePlugin_Build_AUv3
-
-#if JUCE_MAC && ! (defined (MAC_OS_X_VERSION_10_11) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_11)
- #error AUv3 needs Deployment Target OS X 10.11 or higher to compile
-#endif
 
 #ifndef __OBJC2__
  #error AUv3 needs Objective-C 2 support (compile with 64-bit)
@@ -538,7 +543,7 @@ public:
         hostMusicalContextCallback = [au musicalContextBlock];
         hostTransportStateCallback = [au transportStateBlock];
 
-        if (@available (macOS 10.13, iOS 11.0, *))
+        if (@available (macOS 10.13, *))
             midiOutputEventBlock = [au MIDIOutputEventBlock];
 
         reset();
@@ -624,7 +629,7 @@ public:
             {
                 const auto value = (newValue != nullptr ? *newValue : juceParam->getValue()) * getMaximumParameterValue (*juceParam);
 
-                if (@available (macOS 10.12, iOS 10.0, *))
+                if (@available (macOS 10.12, *))
                 {
                     [param setValue: value
                          originator: editorObserverToken.get()
@@ -844,7 +849,7 @@ private:
             addMethod (@selector (supportsMPE),                             [] (id self, SEL)                                                   { return _this (self)->getSupportsMPE() ? YES : NO; });
             JUCE_END_IGNORE_WARNINGS_GCC_LIKE
 
-            if (@available (macOS 10.13, iOS 11.0, *))
+            if (@available (macOS 10.13, *))
                 addMethod (@selector (MIDIOutputNames),                     [] (id self, SEL)                                                   { return _this (self)->getMIDIOutputNames(); });
 
             //==============================================================================
@@ -866,7 +871,7 @@ private:
            #endif
 
             //==============================================================================
-            if (@available (macOS 10.13, iOS 11.0, *))
+            if (@available (macOS 10.13, *))
             {
                 addMethod (@selector (supportedViewConfigurations:), [] (id self, SEL, NSArray<AUAudioUnitViewConfiguration*>* configs)
                 {
@@ -1576,7 +1581,7 @@ private:
 
             // send MIDI
            #if JucePlugin_ProducesMidiOutput
-            if (@available (macOS 10.13, iOS 11.0, *))
+            if (@available (macOS 10.13, *))
             {
                 if (auto midiOut = midiOutputEventBlock)
                     for (const auto metadata : midiMessages)

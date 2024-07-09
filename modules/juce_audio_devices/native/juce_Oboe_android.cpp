@@ -32,6 +32,9 @@
   ==============================================================================
 */
 
+// IMPORTANT: this file has been changed to work with a custom Oboe repository
+// Compatible with Oboe version 1.9.0 (not version 1.8.0 included with JUCE 8)
+
 #ifndef JUCE_OBOE_LOG_ENABLED
  #define JUCE_OBOE_LOG_ENABLED 1
 #endif

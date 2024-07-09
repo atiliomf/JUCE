@@ -84,3 +84,12 @@ extras/Projucer/Builds/MacOSX/Projucer.xcodeproj/project.pbxproj
 examples/DemoRunner/DemoRunner.jucer
 /examples
 /examples/DemoRunner
+examples/DemoRunner/Builds/VisualStudio2022/DemoRunner_App.vcxproj.filters
+examples/DemoRunner/Builds/VisualStudio2019/DemoRunner_App.vcxproj
+examples/DemoRunner/Builds/VisualStudio2019/DemoRunner_App.vcxproj.filters
+examples/DemoRunner/Builds/VisualStudio2022/DemoRunner_App.vcxproj
+examples/DemoRunner/Builds/VisualStudio2019/DemoRunner_App.vcxproj
+examples/DemoRunner/Builds/VisualStudio2022/DemoRunner_App.vcxproj.filters
+examples/DemoRunner/Builds/VisualStudio2022/DemoRunner_App.vcxproj
+examples/DemoRunner/Builds/VisualStudio2019/DemoRunner_App.vcxproj.filters
+examples/DemoRunner/Builds/VisualStudio2019/DemoRunner_App.vcxproj

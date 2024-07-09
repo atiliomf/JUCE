@@ -465,10 +465,6 @@ public:
      * This can occur when a stream is disconnected because a headset is plugged in or unplugged.
      * It can also occur if the audio service fails or if an exclusive stream is stolen by
      * another stream.
-     * 
-     * Note that error callbacks will only be called when a data callback has been specified
-     * and the stream is started. If you are not using a data callback then the read(), write()
-     * and requestStart() methods will return errors if the stream is disconnected.
      *
      * <strong>Important: See AudioStreamCallback for restrictions on what may be called
      * from the callback methods.</strong>
@@ -560,7 +556,7 @@ public:
      *
      * If you do the conversion in Oboe then you might still get a low latency stream.
      *
-     * Default is SampleRateConversionQuality::Medium
+     * Default is SampleRateConversionQuality::None
      */
     AudioStreamBuilder *setSampleRateConversionQuality(SampleRateConversionQuality quality) {
         mSampleRateConversionQuality = quality;
@@ -650,14 +646,6 @@ public:
     Result openManagedStream(ManagedStream &stream);
 
 private:
-
-    /**
-     * Use this internally to implement opening with a shared_ptr.
-     *
-     * @param stream pointer to a variable to receive the stream address
-     * @return OBOE_OK if successful or a negative error code.
-     */
-    Result openStreamInternal(AudioStream **streamPP);
 
     /**
      * @param other

@@ -28,8 +28,7 @@ SampleRateConverter::SampleRateConverter(int32_t channelCount,
 
 void SampleRateConverter::reset() {
     FlowGraphNode::reset();
-    mInputCallCount = kInitialCallCount;
-    mInputCursor = 0;
+    mInputCursor = kInitialCallCount;
 }
 
 // Return true if there is a sample available.

@@ -89,7 +89,7 @@ public:
         if (loadSymbols()) return false;
         if (mAAudio_getMMapPolicy == nullptr) return false;
         int32_t policy = mAAudio_getMMapPolicy();
-        return (policy == Unspecified) ? mMMapSupported : isPolicyEnabled(policy);
+        return isPolicyEnabled(policy);
     }
 
     bool isMMapSupported() {

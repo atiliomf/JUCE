@@ -1256,9 +1256,7 @@ public:
     {
         auto deviceClass = LocalRef<jclass> ((jclass) env->FindClass ("android/media/AudioDeviceInfo"));
 
-        jmethodID getProductNameMethod = env->GetMethodID (deviceClass, "getProductName",
-                                                           "()Ljava/lang/CharSequence;");
-
+        jmethodID getProductNameMethod   = env->GetMethodID (deviceClass, "getProductName", "()Ljava/lang/CharSequence;");
         jmethodID getTypeMethod          = env->GetMethodID (deviceClass, "getType", "()I");
         jmethodID getIdMethod            = env->GetMethodID (deviceClass, "getId", "()I");
         jmethodID getSampleRatesMethod   = env->GetMethodID (deviceClass, "getSampleRates", "()[I");

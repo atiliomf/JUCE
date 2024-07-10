@@ -574,7 +574,7 @@ private:
             builder.setFormat (format);
             builder.setSampleRate (newSampleRate);
             builder.setPerformanceMode (oboe::PerformanceMode::LowLatency);
-            //builder.setFramesPerDataCallback (oboe::DefaultStreamValues::FramesPerBurst);
+            builder.setFramesPerDataCallback (oboe::DefaultStreamValues::FramesPerBurst);
 
            #if JUCE_USE_ANDROID_OBOE_STABILIZED_CALLBACK
             if (newCallback != nullptr)

@@ -569,10 +569,19 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
         return false;
     }
     
+    bool isHFPdevice()
+    {
+        for (AVAudioSessionPortDescription* port in [[AVAudioSession sharedInstance] availableInputs])
+            if ([port.portType containsString: AVAudioSessionPortBluetoothHFP])
+                return true;
+
+        return false;
+    }
+    
     bool enableBluetoothSCO (bool enable)
     {
-        NSString* mode = (enable && isBluetoothDevice() ? AVAudioSessionModeVoiceChat
-                                                        : AVAudioSessionModeDefault);
+        NSString* mode = (enable && isBluetoothDevice() && isHFPdevice() ? AVAudioSessionModeVoiceChat
+                                                                         : AVAudioSessionModeDefault);
         NSError* error = nil;
         
         auto session = [AVAudioSession sharedInstance];

@@ -1950,14 +1950,12 @@ private:
             {
                 constexpr auto APPEARANCE_LIGHT_STATUS_BARS = 0x00000008;
                 constexpr auto APPEARANCE_LIGHT_NAVIGATION_BARS = 0x00000010;
+                constexpr auto bothLightAppearance = APPEARANCE_LIGHT_STATUS_BARS | APPEARANCE_LIGHT_NAVIGATION_BARS;
                 
                 LocalRef<jobject> controller (env->CallObjectMethod (mainWindow.get(), AndroidWindow30.getInsetsController));
                 
                 env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
-                                     style == Style::light ? APPEARANCE_LIGHT_STATUS_BARS : 0, APPEARANCE_LIGHT_STATUS_BARS);
-                
-                env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
-                                     style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
+                                     style == Style::light ? bothLightAppearance : 0, bothLightAppearance);
             }
             else
             {

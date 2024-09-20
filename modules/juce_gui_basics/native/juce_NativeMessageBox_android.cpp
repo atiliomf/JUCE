@@ -60,7 +60,7 @@ std::unique_ptr<ScopedMessageBoxInterface> ScopedMessageBoxInterface::create (co
 
             setText (AndroidAlertDialogBuilder.setTitle,   opts.getTitle());
             setText (AndroidAlertDialogBuilder.setMessage, opts.getMessage());
-            builder = LocalRef<jobject> (env->CallObjectMethod (builder, AndroidAlertDialogBuilder.setCancelable, true));
+            builder = LocalRef<jobject> (env->CallObjectMethod (builder, AndroidAlertDialogBuilder.setCancelable, false));
 
             builder = LocalRef<jobject> (env->CallObjectMethod (builder, AndroidAlertDialogBuilder.setOnCancelListener,
                                                                 CreateJavaInterface (makeDialogListener (0),

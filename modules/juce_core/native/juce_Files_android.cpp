@@ -907,7 +907,13 @@ JUCE_API bool JUCE_CALLTYPE Process::openDocument (const String& fileName, const
 
     const LocalRef<jstring> action (javaString ("android.intent.action.VIEW"));
     LocalRef<jobject> intent (env->NewObject (AndroidIntent, AndroidIntent.constructWithUri, action.get(), urlToUri (targetURL).get()));
-
+    
+//    LocalRef<jobject> appContext (getAppContext());
+//    if (appContext == nullptr) return false;
+//    LocalRef<jobject> pkgManager (env->CallObjectMethod (appContext.get(), AndroidContext.getPackageManager));
+//    LocalRef<jobject> resolveInfo (env->CallObjectMethod (pkgManager.get(), AndroidPackageManager.resolveActivity, intent.get(), 0));
+//    if (resolveInfo == nullptr) return false;
+    
     env->CallVoidMethod (getCurrentActivity(), AndroidContext.startActivity, intent.get());
     return true;
 }

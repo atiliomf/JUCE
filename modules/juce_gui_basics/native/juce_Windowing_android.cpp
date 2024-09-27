@@ -1951,8 +1951,6 @@ private:
         {
             auto* env = getEnv();
             LocalRef<jobject> mainWindow (env->CallObjectMethod (activity.get(), AndroidActivity.getWindow));
-            LocalRef<jobject> decorView (env->CallObjectMethod (mainWindow.get(), AndroidWindow.getDecorView));
-            LocalRef<jobject> rootView (env->CallObjectMethod (decorView.get(), AndroidView.getRootView));
                                                                                                     
             view.callVoidMethod (ComponentPeerView.setSystemUiVisibilityCompat, (navBarsHidden ? (jint) (getFullscreenFlags())
                                                                                                : (jint) (getNonFullscreenFlags())));
@@ -1973,6 +1971,9 @@ private:
                     env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, style == Style::light ? WHITE : BLACK);
                 }
                 
+                LocalRef<jobject> decorView (env->CallObjectMethod (mainWindow.get(), AndroidWindow.getDecorView));
+                LocalRef<jobject> rootView (env->CallObjectMethod (decorView.get(), AndroidView.getRootView));
+                
                 env->CallVoidMethod (rootView.get(), AndroidView.setBackgroundColor, style == Style::light ? WHITE : BLACK);
             }
             else
@@ -1986,7 +1987,7 @@ private:
                                      style == Style::light ? APPEARANCE_LIGHT_STATUS_BARS : 0, APPEARANCE_LIGHT_STATUS_BARS);
                                      
                 env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
-                                     style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);                                     
+                                     style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
             }
         }
     }         

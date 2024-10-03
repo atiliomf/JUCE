@@ -373,7 +373,7 @@ DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidAudioAttributesBuilder, "android/media/Au
 #undef JNI_CLASS_MEMBERS
 
 
-// vvvvvvvvvvvvvvvvvvvvvvvvv
+// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 #define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
   METHOD (abandonAudioFocus,                "abandonAudioFocus",                "(Landroid/media/AudioManager$OnAudioFocusChangeListener;)I") \
@@ -418,8 +418,27 @@ DECLARE_JNI_CLASS (AndroidAudioDevicesInfo, "android/media/AudioDeviceInfo")
 DECLARE_JNI_CLASS (AndroidIntentFilter, "android/content/IntentFilter")
 #undef JNI_CLASS_MEMBERS
 
-// ^^^^^^^^^^^^^^^^^^^^^^^^
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+   STATICMETHOD (create, "create", "(Landroid/content/Context;)Lcom/google/android/play/core/review/ReviewManager;")
+  
+DECLARE_JNI_CLASS (ReviewManagerFactory, "com/google/android/play/core/review/ReviewManagerFactory")
+#undef JNI_CLASS_MEMBERS
+   
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+   METHOD (requestReviewFlow, "requestReviewFlow", "()Lcom/google/android/gms/tasks/Task;") \
+   METHOD (launchReviewFlow, "launchReviewFlow", "(Landroid/app/Activity;Lcom/google/android/play/core/review/ReviewInfo;)Lcom/google/android/gms/tasks/Task;")
+  
+DECLARE_JNI_CLASS (ReviewManager, "com/google/android/play/core/review/ReviewManager")
+#undef JNI_CLASS_MEMBERS
+   
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+   METHOD (isSuccessful, "isSuccessful", "()Z") \
+   METHOD (getResult, "getResult", "()Ljava/lang/Object;")
+  
+DECLARE_JNI_CLASS (Task, "com/google/android/gms/tasks/Task")
+#undef JNI_CLASS_MEMBERS
 
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 #define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
@@ -1230,5 +1249,49 @@ bool isBluetoothScoDeviceConnected();
 String getBluetoothScoState();
 void setBluetoothSco (bool shouldSet);
 void setCommunicationModeNormal();
+
+struct AndroidInAppReview
+{
+    GlobalRef reviewManager;
+    GlobalRef task;
+
+    void requestFlow()
+    {
+        LocalRef<jobject> activity (getMainActivity());
+
+        if (activity == nullptr)
+            return;
+        
+        auto* env = getEnv();
+        
+        reviewManager = GlobalRef (LocalRef<jobject> (env->CallStaticObjectMethod (ReviewManagerFactory, ReviewManagerFactory.create, getAppContext().get())));
+        
+        task = GlobalRef (LocalRef<jobject> (env->CallObjectMethod (reviewManager.get(), ReviewManager.requestReviewFlow)));
+    }
+    
+    bool requestReview()
+    {
+        LocalRef<jobject> activity (getMainActivity());
+
+        if (activity == nullptr)
+            return false;
+    
+        auto* env = getEnv();
+        
+        if (task == nullptr)
+            return false;
+    
+        bool flowRequestWasSuccessful = env->CallBooleanMethod (task.get(), Task.isSuccessful);
+        
+        if (flowRequestWasSuccessful)
+        {
+            LocalRef<jobject> reviewInfo (env->CallObjectMethod (task.get(), Task.getResult));
+            
+            env->CallObjectMethod (reviewManager.get(), ReviewManager.launchReviewFlow, activity.get(), reviewInfo.get());
+        }
+        
+        return flowRequestWasSuccessful;
+    }
+};
 
 } // namespace juce

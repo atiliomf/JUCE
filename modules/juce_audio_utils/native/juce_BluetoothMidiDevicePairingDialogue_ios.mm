@@ -46,16 +46,16 @@ public:
         : bounds (boundsToUse)
     {
         std::unique_ptr<ModalComponentManager::Callback> exitCallback (exitCallbackToUse);
-        
+
         update();
-        
+
         kioskModeComponent = Desktop::getInstance().getKioskModeComponent();
-        
+
         if (kioskModeComponent != nullptr)
             kioskModeComponent->addChildComponent (this);
         else
             addToDesktop (ComponentPeer::windowHasDropShadow);
-    
+
         toFront (true);
         setAlwaysOnTop (true);
         setVisible (true);

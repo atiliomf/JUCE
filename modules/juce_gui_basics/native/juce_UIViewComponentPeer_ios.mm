@@ -1868,7 +1868,7 @@ void UIViewComponentPeer::updateScreenBounds()
     else if (! isSharedWindow)
     {
         auto newDesktop = desktop.getDisplays().getPrimaryDisplay()->userArea;
-        
+
         if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion: (NSOperatingSystemVersion){16, 0, 0}])
         {
             if (newDesktop != oldDesktop)

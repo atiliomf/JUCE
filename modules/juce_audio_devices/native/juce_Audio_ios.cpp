@@ -420,9 +420,9 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
 
             return 1;
         });
-        
+
         NSTimeInterval bufferDuration = currentSampleRate > 0 ? (NSTimeInterval) (newBufferSize + extraOffset) / currentSampleRate : 0.0;
-           
+
         auto session = [AVAudioSession sharedInstance];
 
         // According to the apple docs, it's best to set preferred sample rates and block sizes

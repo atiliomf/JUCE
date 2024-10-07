@@ -417,14 +417,6 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
             // This breaks on iOS 18, which needs the buffer duration to be as precise as possible.
             if (@available (ios 18, *))
                 return 0;
-<<<<<<< HEAD
-=======
-
-            return 1;
-        });
-
-        NSTimeInterval bufferDuration = currentSampleRate > 0 ? (NSTimeInterval) (newBufferSize + extraOffset) / currentSampleRate : 0.0;
->>>>>>> 7e73ed7c36d8f61c996b9ca2e6d99b965a0ec62a
 
             return 1;
         });

@@ -304,7 +304,11 @@ namespace juce::LiveConstantEditor
  */
  #define JUCE_LIVE_CONSTANT(initialValue) \
     (juce::LiveConstantEditor::getValue (__FILE__, __LINE__ - 1, initialValue).get())
+ #define JLC(initialValue) \
+    (juce::LiveConstantEditor::getValue (__FILE__, __LINE__ - 1, initialValue).get())
 #else
  #define JUCE_LIVE_CONSTANT(initialValue) \
+    (initialValue)
+ #define JLC(initialValue) \
     (initialValue)
 #endif

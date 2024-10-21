@@ -134,12 +134,22 @@ LiveValueBase::~LiveValueBase()
 LivePropertyEditorBase::LivePropertyEditorBase (LiveValueBase& v, CodeDocument& d)
     : value (v), document (d), sourceEditor (document, &tokeniser)
 {
+#if JUCE_IOS || JUCE_ANDROID
+    setSize (200, 50);
+
+    addAndMakeVisible (name);
+    addAndMakeVisible (resetButton);
+    addAndMakeVisible (valueEditor);
+    valueEditor.setReadOnly (true);
+    //addAndMakeVisible (sourceEditor);
+#else
     setSize (600, 100);
 
     addAndMakeVisible (name);
     addAndMakeVisible (resetButton);
     addAndMakeVisible (valueEditor);
     addAndMakeVisible (sourceEditor);
+#endif
 
     findOriginalValueInCode();
     selectOriginalValue();
@@ -165,7 +175,11 @@ void LivePropertyEditorBase::resized()
 {
     auto r = getLocalBounds().reduced (0, 3).withTrimmedBottom (1);
 
+#if JUCE_IOS || JUCE_ANDROID
+    auto left = r.removeFromLeft (jmax (200, r.getWidth()));
+#else
     auto left = r.removeFromLeft (jmax (200, r.getWidth() / 3));
+#endif
 
     auto top = left.removeFromTop (25);
     resetButton.setBounds (top.removeFromRight (35).reduced (0, 3));
@@ -182,8 +196,10 @@ void LivePropertyEditorBase::resized()
         valueEditor.setBounds (left);
     }
 
+#if ! (JUCE_IOS || JUCE_ANDROID)
     r.removeFromLeft (4);
     sourceEditor.setBounds (r);
+#endif
 }
 
 void LivePropertyEditorBase::applyNewValue (const String& s)
@@ -203,25 +219,37 @@ void LivePropertyEditorBase::selectOriginalValue()
     sourceEditor.selectRegion (valueStart, valueEnd);
 }
 
-void LivePropertyEditorBase::findOriginalValueInCode()
+void LivePropertyEditorBase::findOriginalValueInCode() // changes to this function: to accomodate for "JLC" macro
 {
     CodeDocument::Position pos (document, value.sourceLine, 0);
     auto line = pos.getLineText();
     auto p = line.getCharPointer();
 
     p = CharacterFunctions::find (p, CharPointer_ASCII ("JUCE_LIVE_CONSTANT"));
-
+    
     if (p.isEmpty())
     {
-        // Not sure how this would happen - some kind of mix-up between source code and line numbers..
-        jassertfalse;
-        return;
+        p = line.getCharPointer();
+        p = CharacterFunctions::find (p, CharPointer_ASCII ("JLC"));
+        
+        if (p.isEmpty())
+        {
+            // Not sure how this would happen - some kind of mix-up between source code and line numbers..
+            jassertfalse;
+            return;
+        }
+        
+        p += (int) (sizeof ("JLC") - 1);
+    }
+    else
+    {
+        p += (int) (sizeof ("JUCE_LIVE_CONSTANT") - 1);
     }
 
-    p += (int) (sizeof ("JUCE_LIVE_CONSTANT") - 1);
     p.incrementToEndOfWhitespace();
 
-    if (! CharacterFunctions::find (p, CharPointer_ASCII ("JUCE_LIVE_CONSTANT")).isEmpty())
+    if (! CharacterFunctions::find (p, CharPointer_ASCII ("JUCE_LIVE_CONSTANT")).isEmpty()
+     || ! CharacterFunctions::find (p, CharPointer_ASCII ("JLC")).isEmpty())
     {
         // Aargh! You've added two JUCE_LIVE_CONSTANT macros on the same line!
         // They're identified by their line number, so you must make sure each
@@ -307,14 +335,22 @@ public:
     {
         setLookAndFeel (&lookAndFeel);
         setUsingNativeTitleBar (true);
-
-        viewport.setViewedComponent (new ValueListHolderComponent (list), true);
-        viewport.setSize (700, 600);
-        viewport.setScrollBarsShown (true, false);
-
-        setContentNonOwned (&viewport, true);
+        
+#if JUCE_IOS || JUCE_ANDROID
+        setResizable (false, false);
+        setResizeLimits (200, 200, 200, 300);
+        viewport.setSize (200, 150);
+        setAlwaysOnTop (true);
+#else
         setResizable (true, false);
         setResizeLimits (500, 400, 10000, 10000);
+        viewport.setSize (700, 600);
+#endif
+
+        viewport.setViewedComponent (new ValueListHolderComponent (list), true);
+        viewport.setScrollBarsShown (true, false);
+        setContentNonOwned (&viewport, true);
+
         centreWithSize (getWidth(), getHeight());
         setVisible (true);
     }

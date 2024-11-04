@@ -627,7 +627,7 @@ private:
         void close()
         {
             if (stream != nullptr)
-            {               
+            {
                 [[maybe_unused]] oboe::Result result = stream->close();
                 JUCE_OBOE_LOG ("Requested Oboe stream close with result: " + getOboeString (result));
             }
@@ -1241,8 +1241,6 @@ public:
                 JUCE_OBOE_LOG ("sample rates = " << sampleRatesToString (device.sampleRates));
                 JUCE_OBOE_LOG ("num channels = " + String (device.numChannels));
             }
-            
-            // callDeviceChangeListeners();
         }
     }
 

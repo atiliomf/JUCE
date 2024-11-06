@@ -472,10 +472,6 @@ private:
         ~OboeStream()
         {
             close();
-<<<<<<< HEAD
-            stream.reset();
-=======
->>>>>>> 2c8875c775e35c092befe8b537dd462095e76a7a
         }
 
         bool openedOk() const noexcept
@@ -713,6 +709,7 @@ private:
                     {
                         return nativeStream != nullptr ? nativeStream->getSampleRate() : 0;
                     };
+
                     // Input & output sample rates should match!
                     jassert (getSampleRate (inputStream->getNativeStream())
                                == getSampleRate (outputStream->getNativeStream()));

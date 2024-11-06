@@ -520,7 +520,7 @@ private:
         std::shared_ptr<oboe::AudioStream> getNativeStream() const
         {
             jassert (openedOk());
-            return stream.get();
+            return stream;
         }
 
         int getXRunCount() const
@@ -709,7 +709,6 @@ private:
                     {
                         return nativeStream != nullptr ? nativeStream->getSampleRate() : 0;
                     };
-
                     // Input & output sample rates should match!
                     jassert (getSampleRate (inputStream->getNativeStream())
                                == getSampleRate (outputStream->getNativeStream()));

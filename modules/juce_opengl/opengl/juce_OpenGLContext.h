@@ -184,13 +184,16 @@ public:
         If set to true, the context will run a loop, re-rendering itself without waiting
         for triggerRepaint() to be called, at a frequency determined by the swap interval
         (see setSwapInterval). If false, then after each render callback, it will wait for
-        another call to triggerRepaint() before rendering again.
+        another call to triggerRepaint() before rendering again. If component painting is
+        enabled, repaint() will likewise cause the context to render itself.
         This is disabled by default.
         @see setSwapInterval
     */
     void setContinuousRepainting (bool shouldContinuouslyRepaint) noexcept;
 
-    /** Asynchronously causes a repaint to be made. */
+    /** Asynchronously causes a repaint to be made. If component painting is
+        enabled, repaint() will likewise cause the context to render itself.
+    */
     void triggerRepaint();
 
     //==============================================================================
@@ -243,7 +246,8 @@ public:
 
         The value is the number of frames to allow between buffer-swapping. This is
         fairly system-dependent, but 0 turns off syncing, 1 makes it swap on frame-boundaries,
-        and greater numbers indicate that it should swap less often.
+        and greater numbers indicate that it should swap less often (this has no effect
+        on macOS).
 
         By default, this will be set to 1.
 

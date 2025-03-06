@@ -73,3 +73,26 @@ extras/Projucer/Builds/MacOSX/Projucer.xcodeproj/project.pbxproj
 
 /examples
 /extras/Projucer/Builds
+examples/DemoRunner/Builds/Android/app/src/main/res/drawable-hdpi/icon.png
+examples/DemoRunner/Builds/Android/app/src/main/res/drawable-ldpi/icon.png
+examples/DemoRunner/Builds/Android/app/src/main/res/drawable-mdpi/icon.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-29.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-29@2x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-29@3x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-60@2x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-76.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-76@2x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-83.5@2x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-@3x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Notification-20@2x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Notification-20@3x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Notifications-20.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Notifications-20@2x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Small-1.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Small@2x-1.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Spotlight-40.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Spotlight-40@2x-1.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Spotlight-40@2x.png
+examples/DemoRunner/Builds/iOS/DemoRunner/Images.xcassets/AppIcon.appiconset/Icon-Spotlight-40@3x.png
+examples/DemoRunner/Builds/VisualStudio2019/icon.ico
+examples/DemoRunner/Builds/VisualStudio2022/icon.ico

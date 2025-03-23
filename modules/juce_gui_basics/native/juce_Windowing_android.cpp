@@ -1320,7 +1320,7 @@ public:
 
         if (supportsDisplayCutout())
         {
-            if (const auto methodID = AndroidView23.setOnApplyWindowInsetsListener)
+            if (const auto methodID = AndroidView.setOnApplyWindowInsetsListener)
             {
                 env->CallVoidMethod (view,
                                      methodID,
@@ -2761,7 +2761,7 @@ void Displays::findDisplays (float masterScale)
             if (! activityArea.isEmpty())
                 d.userArea = activityArea / d.scale;
 
-            if (const auto getRootWindowInsetsMethodId = AndroidView23.getRootWindowInsets)
+            if (const auto getRootWindowInsetsMethodId = AndroidView.getRootWindowInsets)
             {
                 LocalRef<jobject> insets (env->CallObjectMethod (contentView.get(), getRootWindowInsetsMethodId));
                 JuceInsets::tie (d) = getInsetsFromAndroidWindowInsets (insets, d.scale).tie();

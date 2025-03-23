@@ -1250,8 +1250,7 @@ public:
 
     bool supportsDevicesInfo() const
     {
-        static auto result = getAndroidSDKVersion() >= 23;
-        return result;
+        return true;
     }
 
     void addDevice (const LocalRef<jobject>& device, JNIEnv* env)

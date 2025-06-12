@@ -344,9 +344,7 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
         // We need to activate the audio session here to obtain the available sample rates and buffer sizes,
         // but if we don't set a category first then background audio will always be stopped. This category
         // may be changed later.
-        
-        // CHANGE: avoid background audio played by other apps being stopped if these apps do not support input channels
-        setAudioSessionCategory (AVAudioSessionCategoryPlayback);
+        setAudioSessionCategory (AVAudioSessionCategoryPlayAndRecord);
 
         setAudioSessionActive (true);
         updateHardwareInfo();
@@ -373,13 +371,16 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
 
         if (category == AVAudioSessionCategoryPlayAndRecord)
         {
-            options |= AVAudioSessionCategoryOptionDefaultToSpeaker
-                    // CHANGE: allow Bluetooth HFP to be set programatically
-                    // | AVAudioSessionCategoryOptionAllowBluetooth
-                     | AVAudioSessionCategoryOptionAllowAirPlay;
+           #if JUCE_IOS_API_VERSION_CAN_BE_BUILT (26, 0)
+            constexpr auto bluetoothOption = AVAudioSessionCategoryOptionAllowBluetoothHFP;
+           #else
+            constexpr auto bluetoothOption = AVAudioSessionCategoryOptionAllowBluetooth;
+           #endif
 
-            if (@available (iOS 10.0, *))
-                options |= AVAudioSessionCategoryOptionAllowBluetoothA2DP;
+            options |= AVAudioSessionCategoryOptionDefaultToSpeaker
+                     | AVAudioSessionCategoryOptionAllowAirPlay
+                     | AVAudioSessionCategoryOptionAllowBluetoothA2DP
+                     | bluetoothOption;
         }
 
         JUCE_NSERROR_CHECK ([[AVAudioSession sharedInstance] setCategory: category
@@ -763,40 +764,6 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
                 lastCallback->audioDeviceStopped();
         }
     }
-    
-    // CHANGE: to allow Bluetooth HFP to be set programatically
-    bool isBluetoothDevice()
-    {
-        for (AVAudioSessionPortDescription* port in [AVAudioSession sharedInstance].currentRoute.outputs)
-            if ([port.portType containsString: @"Bluetooth"])
-                return true;
-        
-        return false;
-    }
-    
-    bool isHFPdevice()
-    {
-        for (AVAudioSessionPortDescription* port in [[AVAudioSession sharedInstance] availableInputs])
-            if ([port.portType containsString: AVAudioSessionPortBluetoothHFP])
-                return true;
-
-        return false;
-    }
-    
-    bool enableBluetoothSCO (bool enable)
-    {
-        NSString* mode = (enable && isBluetoothDevice() && isHFPdevice() ? AVAudioSessionModeVoiceChat
-                                                                         : AVAudioSessionModeDefault);
-        NSError* error = nil;
-        
-        auto session = [AVAudioSession sharedInstance];
-        
-        [session setMode: mode
-                   error: &error];
-        
-        return session.mode == mode
-                   && error != nil;
-    }
 
     bool setAudioPreprocessingEnabled (bool enable)
     {
@@ -981,18 +948,9 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
                                              &dataSize);
         if (err == noErr)
         {
-            if (@available (iOS 10.0, *))
-            {
-                [[UIApplication sharedApplication] openURL: (NSURL*) hostUrl
-                                                   options: @{}
-                                         completionHandler: nil];
-
-                return;
-            }
-
-            JUCE_BEGIN_IGNORE_WARNINGS_GCC_LIKE ("-Wdeprecated-declarations")
-            [[UIApplication sharedApplication] openURL: (NSURL*) hostUrl];
-            JUCE_END_IGNORE_WARNINGS_GCC_LIKE
+            [[UIApplication sharedApplication] openURL: (NSURL*) hostUrl
+                                               options: @{}
+                                     completionHandler: nil];
         }
     }
 
@@ -1119,10 +1077,6 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
     OSStatus process (AudioUnitRenderActionFlags* flags, const AudioTimeStamp* time,
                       const UInt32 numFrames, AudioBufferList* data)
     {
-        // If you hit this assertion please contact the JUCE team and let us
-        // know the iOS version/device and audio device that you're using
-        jassert (bufferSize == (int) numFrames);
-
         OSStatus err = noErr;
 
         recordXruns (time, numFrames);
@@ -1681,7 +1635,6 @@ Array<double> iOSAudioIODevice::getAvailableSampleRates()           { return pim
 Array<int> iOSAudioIODevice::getAvailableBufferSizes()              { return pimpl->availableBufferSizes; }
 
 bool iOSAudioIODevice::setAudioPreprocessingEnabled (bool enabled)  { return pimpl->setAudioPreprocessingEnabled (enabled); }
-bool iOSAudioIODevice::enableBluetoothSCO (bool enabled)            { return pimpl->enableBluetoothSCO (enabled); }
 
 bool iOSAudioIODevice::isPlaying()                                  { return pimpl->isRunning && pimpl->callback != nullptr; }
 bool iOSAudioIODevice::isOpen()                                     { return pimpl->isRunning; }

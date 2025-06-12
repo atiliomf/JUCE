@@ -1,5 +1,60 @@
 # JUCE breaking changes
 
+# develop
+
+## Change
+
+The AudioFormat class now only has one virtual createWriterFor member function:
+`createWriterFor (std::unique_ptr<OutputStream>&, const AudioFormatWriterOptions&)`.
+
+The older createWriterFor overloads are now non-virtual and deprecated.
+
+**Possible Issues**
+
+Classes overriding the old AudioFormat::createWriterFor functions will fail to
+compile.
+
+Additionally, code calling the old functions will emit a deprecation warning.
+
+**Workaround**
+
+Classes inheriting from AudioFormat should override the new createWriterFor
+function that takes an AudioFormatWriterOptions parameter.
+
+**Rationale**
+
+Adding support for writing wav files in 32-bit PCM format required the addition
+of another parameter to the AudioFormat::createWriterFor interface. This
+function already had many parameters, some of them already superfluous for some
+of the formats that share this interface. The introduction of a new options type
+makes it easier to extend this interface now and in the future. The old
+functions are marked deprecated, as allowing to override them would have made
+the implementation more complicated. The new signature better communicates
+resource ownership, helping to avoid bugs due to misuse.
+
+
+## Change
+
+Some functions and types have been moved from the VST3ClientExtentions class
+into a new VST3Interface struct and JUCE_VST3_COMPATIBLE_CLASSES preprocessor
+definition.
+
+**Possible Issues**
+
+Your project may not compile.
+
+**Workaround**
+
+Replace relevant types and function calls with the equivalent in the
+VST3Interface struct, and/or define the JUCE_VST3_COMPATIBLE_CLASSES
+preprocessor definition in your Projucer or CMake project.
+
+**Rationale**
+
+This change allows the VST3 helper executable to be built without needing to
+depend on, and load, the plugin as part of the post build steps.
+
+
 # Version 8.0.7
 
 ## Change
@@ -353,7 +408,7 @@ encoded string literal, for example for file comparison, Base64 encoding, or any
 encryption, may result in false negatives for JSON data containing the same data
 between versions of JUCE.
 
-Note: JSON files that only ever encoded ASCII text will NOT be effected.
+Note: JSON files that only ever encoded ASCII text will NOT be affected.
 
 **Workaround**
 

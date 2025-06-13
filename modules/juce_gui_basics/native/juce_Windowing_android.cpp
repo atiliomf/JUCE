@@ -1030,6 +1030,7 @@ namespace
     };
 
     constexpr int fullScreenFlags = SYSTEM_UI_FLAG_HIDE_NAVIGATION | SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    constexpr int lightModeFlags = SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
     constexpr int FLAG_NOT_FOCUSABLE = 0x8;
 
     LocalRef<jobject> getCurrentOrMainActivity() noexcept
@@ -2068,9 +2069,6 @@ private:
         {
             auto* env = getEnv();
             LocalRef<jobject> mainWindow (env->CallObjectMethod (activity.get(), AndroidActivity.getWindow));
-                                                                                                    
-            view.callVoidMethod (ComponentPeerView.setSystemUiVisibilityCompat, (navBarsHidden ? (jint) (getFullscreenFlags())
-                                                                                               : (jint) (getNonFullscreenFlags())));
                                                                                                
             if (getAndroidSDKVersion() < 30)
             {
@@ -2107,26 +2105,6 @@ private:
                                      style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
             }
         }
-    }
-    
-    int getFullscreenFlags()
-    {
-        if (getAndroidSDKVersion() >= 27
-        //&& (getAndroidSDKVersion() < 30 || getAndroidSDKVersion() == 34)
-        && style == Style::light)
-            return lightModeFlags | fullScreenFlags;
-        
-        return fullScreenFlags;
-    }
-    
-    int getNonFullscreenFlags()
-    {
-        if (getAndroidSDKVersion() >= 27
-        //&& (getAndroidSDKVersion() < 30 || getAndroidSDKVersion() == 34)
-        && style == Style::light)
-            return lightModeFlags;
-        
-        return 0;
     }
 //^^^^^
 
@@ -2482,13 +2460,10 @@ private:
         // back again. Therefore, we should call setSystemUiVisibilityCompat each time to
         // ensure that the system bars get put back into the expected state.
         navBarsHidden = hidden;
-//        getEnv()->CallVoidMethod (view,
-//                                  ComponentPeerView.setSystemUiVisibilityCompat,
-//                                  activityWindow.get(),
-//                                  (jboolean) ! navBarsHidden);
-        view.callVoidMethod (ComponentPeerView.setSystemUiVisibilityCompat,
-                             navBarsHidden ? (jint) (getFullscreenFlags())
-                                           : (jint) (getNonFullscreenFlags()));
+        getEnv()->CallVoidMethod (view,
+                                  ComponentPeerView.setSystemUiVisibilityCompat,
+                                  activityWindow.get(),
+                                  (jboolean) ! navBarsHidden);
     }
 
     template <typename Callback>

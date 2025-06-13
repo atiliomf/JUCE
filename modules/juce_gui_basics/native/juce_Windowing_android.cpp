@@ -1020,11 +1020,13 @@ namespace
         SYSTEM_UI_FLAG_LOW_PROFILE = 1,
         SYSTEM_UI_FLAG_HIDE_NAVIGATION = 2,
         SYSTEM_UI_FLAG_FULLSCREEN = 4,
+        SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR = 16,
         SYSTEM_UI_FLAG_LAYOUT_STABLE = 256,
         SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION = 512,
         SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN = 1024,
         SYSTEM_UI_FLAG_IMMERSIVE = 2048,
-        SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096
+        SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096,
+        SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 8192
     };
 
     constexpr int fullScreenFlags = SYSTEM_UI_FLAG_HIDE_NAVIGATION | SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
@@ -2057,6 +2059,77 @@ public:
     };
 
 private:
+//vvvvv
+    void appStyleChanged() override
+    {
+        LocalRef<jobject> activity (getMainActivity());
+        
+        if (activity != nullptr)
+        {
+            auto* env = getEnv();
+            LocalRef<jobject> mainWindow (env->CallObjectMethod (activity.get(), AndroidActivity.getWindow));
+                                                                                                    
+            view.callVoidMethod (ComponentPeerView.setSystemUiVisibilityCompat, (navBarsHidden ? (jint) (getFullscreenFlags())
+                                                                                               : (jint) (getNonFullscreenFlags())));
+                                                                                               
+            if (getAndroidSDKVersion() < 30)
+            {
+                constexpr auto WHITE = 0xffffffff;
+                constexpr auto BLACK = 0xff000000;
+            
+                if (getAndroidSDKVersion() < 27)
+                {
+                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, BLACK);
+                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, BLACK);
+                }
+                else
+                {
+                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, style == Style::light ? WHITE : BLACK);
+                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, style == Style::light ? WHITE : BLACK);
+                }
+                
+                LocalRef<jobject> decorView (env->CallObjectMethod (mainWindow.get(), AndroidWindow.getDecorView));
+                LocalRef<jobject> rootView (env->CallObjectMethod (decorView.get(), AndroidView.getRootView));
+                
+                env->CallVoidMethod (rootView.get(), AndroidView.setBackgroundColor, style == Style::light ? WHITE : BLACK);
+            }
+            else
+            {
+                constexpr int APPEARANCE_LIGHT_STATUS_BARS = 1 << 3;
+                constexpr int APPEARANCE_LIGHT_NAVIGATION_BARS = 1 << 4;
+                
+                LocalRef<jobject> controller (env->CallObjectMethod (mainWindow.get(), AndroidWindow30.getInsetsController));
+                                     
+                env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
+                                     style == Style::light ? APPEARANCE_LIGHT_STATUS_BARS : 0, APPEARANCE_LIGHT_STATUS_BARS);
+                                     
+                env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
+                                     style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
+            }
+        }
+    }
+    
+    int getFullscreenFlags()
+    {
+        if (getAndroidSDKVersion() >= 27
+        //&& (getAndroidSDKVersion() < 30 || getAndroidSDKVersion() == 34)
+        && style == Style::light)
+            return lightModeFlags | fullScreenFlags;
+        
+        return fullScreenFlags;
+    }
+    
+    int getNonFullscreenFlags()
+    {
+        if (getAndroidSDKVersion() >= 27
+        //&& (getAndroidSDKVersion() < 30 || getAndroidSDKVersion() == 34)
+        && style == Style::light)
+            return lightModeFlags;
+        
+        return 0;
+    }
+//^^^^^
+
     template <auto Member>
     static void mouseCallbackWrapper (JNIEnv*, AndroidComponentPeer& t, jint i, jfloat x, jfloat y, jlong time) { return (t.*Member) (i, Point<float> { x, y }, time); }
 
@@ -2409,10 +2482,13 @@ private:
         // back again. Therefore, we should call setSystemUiVisibilityCompat each time to
         // ensure that the system bars get put back into the expected state.
         navBarsHidden = hidden;
-        getEnv()->CallVoidMethod (view,
-                                  ComponentPeerView.setSystemUiVisibilityCompat,
-                                  activityWindow.get(),
-                                  (jboolean) ! navBarsHidden);
+//        getEnv()->CallVoidMethod (view,
+//                                  ComponentPeerView.setSystemUiVisibilityCompat,
+//                                  activityWindow.get(),
+//                                  (jboolean) ! navBarsHidden);
+        view.callVoidMethod (ComponentPeerView.setSystemUiVisibilityCompat,
+                             navBarsHidden ? (jint) (getFullscreenFlags())
+                                           : (jint) (getNonFullscreenFlags()));
     }
 
     template <typename Callback>

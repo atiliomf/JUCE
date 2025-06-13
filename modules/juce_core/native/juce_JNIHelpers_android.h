@@ -375,12 +375,73 @@ DECLARE_JNI_CLASS (AndroidFragment, "android/app/Fragment")
 DECLARE_JNI_CLASS (AndroidAudioAttributesBuilder, "android/media/AudioAttributes$Builder")
 #undef JNI_CLASS_MEMBERS
 
+//vvvvv
+
 #define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
   METHOD (abandonAudioFocus, "abandonAudioFocus", "(Landroid/media/AudioManager$OnAudioFocusChangeListener;)I") \
-  METHOD (requestAudioFocus, "requestAudioFocus", "(Landroid/media/AudioManager$OnAudioFocusChangeListener;II)I")
+  METHOD (requestAudioFocus, "requestAudioFocus", "(Landroid/media/AudioManager$OnAudioFocusChangeListener;II)I") \
+  METHOD (getProperty,                      "getProperty",                      "(Ljava/lang/String;)Ljava/lang/String;") \
+  METHOD (getDevices,                       "getDevices",                       "(I)[Landroid/media/AudioDeviceInfo;") \
+  METHOD (isBluetoothScoAvailableOffCall,   "isBluetoothScoAvailableOffCall",   "()Z") \
+  METHOD (startBluetoothSco,                "startBluetoothSco",                "()V") \
+  METHOD (stopBluetoothSco,                 "stopBluetoothSco",                 "()V") \
+  METHOD (setMode,                          "setMode",                          "(I)V") \
+  METHOD (getStreamMaxVolume,               "getStreamMaxVolume",               "(I)I") \
+  METHOD (getStreamVolume,                  "getStreamVolume",                  "(I)I") \
+  METHOD (setStreamVolume,                  "setStreamVolume",                  "(III)V") \
+  METHOD (adjustVolume,                     "adjustVolume",                     "(II)V")  
 
 DECLARE_JNI_CLASS (AndroidAudioManager, "android/media/AudioManager")
 #undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+  METHOD (setCommunicationDevice,   "setCommunicationDevice",   "(Landroid/media/AudioDeviceInfo;)Z") \
+  METHOD (clearCommunicationDevice, "clearCommunicationDevice", "()V")
+
+DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidAudioManager31, "android/media/AudioManager", 31)
+#undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+  METHOD (getProductName,   "getProductName",   "()Ljava/lang/CharSequence;") \
+  METHOD (getType,          "getType",          "()I") \
+  METHOD (getId,            "getId",            "()I") \
+  METHOD (getSampleRates,   "getSampleRates",   "()[I") \
+  METHOD (getChannelCounts, "getChannelCounts", "()[I") \
+  METHOD (isSource,         "isSource",         "()Z")
+
+DECLARE_JNI_CLASS (AndroidAudioDevicesInfo, "android/media/AudioDeviceInfo")
+#undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+  METHOD (constructor,                     "<init>",      "()V") \
+  METHOD (constructWithAction,             "<init>",      "(Ljava/lang/String;)V") \
+  METHOD (addAction,                       "addAction",   "(Ljava/lang/String;)V")
+
+DECLARE_JNI_CLASS (AndroidIntentFilter, "android/content/IntentFilter")
+#undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+   STATICMETHOD (create, "create", "(Landroid/content/Context;)Lcom/google/android/play/core/review/ReviewManager;")
+  
+DECLARE_JNI_CLASS (ReviewManagerFactory, "com/google/android/play/core/review/ReviewManagerFactory")
+#undef JNI_CLASS_MEMBERS
+   
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+   METHOD (requestReviewFlow, "requestReviewFlow", "()Lcom/google/android/gms/tasks/Task;") \
+   METHOD (launchReviewFlow, "launchReviewFlow", "(Landroid/app/Activity;Lcom/google/android/play/core/review/ReviewInfo;)Lcom/google/android/gms/tasks/Task;")
+  
+DECLARE_JNI_CLASS (ReviewManager, "com/google/android/play/core/review/ReviewManager")
+#undef JNI_CLASS_MEMBERS
+   
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+   METHOD (isSuccessful, "isSuccessful", "()Z") \
+   METHOD (getResult, "getResult", "()Ljava/lang/Object;")
+  
+DECLARE_JNI_CLASS (Task, "com/google/android/gms/tasks/Task")
+#undef JNI_CLASS_MEMBERS
+
+// ^^^^^
+
 
 #define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
   STATICMETHOD (createBitmap,     "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;") \
@@ -650,6 +711,7 @@ DECLARE_JNI_CLASS (AndroidUri, "android/net/Uri")
  METHOD (setOnApplyWindowInsetsListener, "setOnApplyWindowInsetsListener", "(Landroid/view/View$OnApplyWindowInsetsListener;)V") \
  METHOD (getRootWindowInsets, "getRootWindowInsets", "()Landroid/view/WindowInsets;") \
  METHOD (getWindowSystemUiVisibility, "getWindowSystemUiVisibility", "()I") \
+ METHOD (setBackgroundColor,        "setBackgroundColor",        "(I)V")
 
 DECLARE_JNI_CLASS (AndroidView, "android/view/View")
 #undef JNI_CLASS_MEMBERS
@@ -666,9 +728,23 @@ DECLARE_JNI_CLASS (AndroidViewGroup, "android/view/ViewGroup")
  METHOD (getDecorView,  "getDecorView",       "()Landroid/view/View;") \
  METHOD (getAttributes, "getAttributes",      "()Landroid/view/WindowManager$LayoutParams;") \
  METHOD (setFlags,      "setFlags",           "(II)V") \
- METHOD (clearFlags,    "clearFlags",         "(I)V")
+ METHOD (clearFlags,    "clearFlags",         "(I)V") \
+ METHOD (setStatusBarColor, "setStatusBarColor", "(I)V") \
+ METHOD (setNavigationBarColor, "setNavigationBarColor", "(I)V")
 
 DECLARE_JNI_CLASS (AndroidWindow, "android/view/Window")
+#undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+ METHOD (getInsetsController, "getInsetsController", "()Landroid/view/WindowInsetsController;")
+
+DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidWindow30, "android/view/Window", 30)
+#undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+ METHOD (setSystemBarsAppearance, "setSystemBarsAppearance", "(II)V")
+
+DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidWindowInsetsController, "android/view/WindowInsetsController", 30)
 #undef JNI_CLASS_MEMBERS
 
 #define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
@@ -1168,5 +1244,61 @@ constexpr auto generateCallbackImpl (Result (*) (JNIEnv*, const Class&, Args...)
 // 'host' argument points to an object on which it is valid to call Fn
 template <auto Fn>
 inline constexpr auto generatedCallback = detail::generateCallbackImpl<Fn> (Fn);
+
+
+
+//vvvvv
+bool isBluetoothScoDeviceConnected();
+String getBluetoothScoState();
+void setBluetoothSco (bool shouldSet);
+void setCommunicationModeNormal();
+
+struct AndroidInAppReview
+{
+    GlobalRef reviewManager;
+    GlobalRef task;
+
+    void requestFlow()
+    {
+        LocalRef<jobject> activity (getMainActivity());
+
+        if (activity == nullptr)
+            return;
+        
+        auto* env = getEnv();
+        
+        reviewManager = GlobalRef (LocalRef<jobject> (env->CallStaticObjectMethod (ReviewManagerFactory, ReviewManagerFactory.create, getAppContext().get())));
+        
+        task = GlobalRef (LocalRef<jobject> (env->CallObjectMethod (reviewManager.get(), ReviewManager.requestReviewFlow)));
+    }
+    
+    bool requestReview()
+    {
+        LocalRef<jobject> activity (getMainActivity());
+
+        if (activity == nullptr)
+            return false;
+    
+        auto* env = getEnv();
+        
+        if (task == nullptr)
+            return false;
+    
+        bool flowRequestWasSuccessful = env->CallBooleanMethod (task.get(), Task.isSuccessful);
+        
+        if (flowRequestWasSuccessful)
+        {
+            LocalRef<jobject> reviewInfo (env->CallObjectMethod (task.get(), Task.getResult));
+            
+            env->CallObjectMethod (reviewManager.get(), ReviewManager.launchReviewFlow, activity.get(), reviewInfo.get());
+        }
+        
+        return flowRequestWasSuccessful;
+    }
+};
+//^^^^^
+
+
+
 
 } // namespace juce

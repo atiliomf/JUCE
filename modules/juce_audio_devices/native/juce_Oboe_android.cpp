@@ -552,15 +552,15 @@ private:
             if (deviceId != -1)
                 builder.setDeviceId (deviceId);
                 
-            auto scoState = getBluetoothScoState();
-                
-            if (scoState == "connected" || scoState == "connecting")
-            {
-                builder.setFormatConversionAllowed (true);
-                    
-                if (getAndroidSDKVersion() >= 28)
-                    builder.setUsage (oboe::Usage::VoiceCommunication);
-            }
+             auto scoState = getBluetoothScoState();
+            
+             if (scoState == "connected" || scoState == "connecting")
+             {
+                 builder.setFormatConversionAllowed (true);
+            
+                 if (getAndroidSDKVersion() >= 28)
+                     builder.setUsage (oboe::Usage::VoiceCommunication);
+             }
                                     
             // Note: letting OS to choose the buffer capacity & frames per callback.
             builder.setDirection (direction);

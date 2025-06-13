@@ -699,7 +699,7 @@ String audioManagerGetProperty (const String& property)
     return {};
 }
 
-//==============================================================================
+//vvvvv
 
 bool isBluetoothScoDeviceConnected()
 {
@@ -833,5 +833,6 @@ void setBluetoothSco (bool shouldSet)
     }
 }
 
+// ^^^^^
 
 }

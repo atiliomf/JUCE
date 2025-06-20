@@ -710,13 +710,14 @@ DECLARE_JNI_CLASS (AndroidUri, "android/net/Uri")
  METHOD (setLayoutParams,           "setLayoutParams",           "(Landroid/view/ViewGroup$LayoutParams;)V") \
  METHOD (getLayoutParams,           "getLayoutParams",           "()Landroid/view/ViewGroup$LayoutParams;") \
  METHOD (setSystemUiVisibility,     "setSystemUiVisibility",     "(I)V") \
+ METHOD (getSystemUiVisibility,     "getSystemUiVisibility",     "()I") \
  METHOD (findViewById,              "findViewById",              "(I)Landroid/view/View;") \
  METHOD (getWindowToken,            "getWindowToken",            "()Landroid/os/IBinder;") \
  METHOD (getRootView,               "getRootView",               "()Landroid/view/View;") \
  METHOD (addOnLayoutChangeListener, "addOnLayoutChangeListener", "(Landroid/view/View$OnLayoutChangeListener;)V") \
  METHOD (announceForAccessibility,  "announceForAccessibility",  "(Ljava/lang/CharSequence;)V")  \
  METHOD (setOnApplyWindowInsetsListener, "setOnApplyWindowInsetsListener", "(Landroid/view/View$OnApplyWindowInsetsListener;)V") \
- METHOD (getRootWindowInsets, "getRootWindowInsets", "()Landroid/view/WindowInsets;") \
+ METHOD (getRootWindowInsets,       "getRootWindowInsets",       "()Landroid/view/WindowInsets;") \
  METHOD (getWindowSystemUiVisibility, "getWindowSystemUiVisibility", "()I") \
  METHOD (setBackgroundColor,        "setBackgroundColor",        "(I)V")
 

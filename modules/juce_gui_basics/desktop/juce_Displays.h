@@ -87,6 +87,7 @@ public:
             Note that these insets may change depending on the current state of the system.
             As a simple example, entering/leaving kiosk mode may cause the system UI visibility
             to change, which may affect the safe areas.
+            
             A more complex example would be split-screen state on Android, where an activity
             occupying the top portion of the screen is likely to have insets for the status bar but
             not the navigation bar, whereas an activity on the bottom may have navigation insets

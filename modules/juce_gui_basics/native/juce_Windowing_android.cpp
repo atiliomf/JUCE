@@ -1020,17 +1020,14 @@ namespace
         SYSTEM_UI_FLAG_LOW_PROFILE = 1,
         SYSTEM_UI_FLAG_HIDE_NAVIGATION = 2,
         SYSTEM_UI_FLAG_FULLSCREEN = 4,
-        SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR = 16,
         SYSTEM_UI_FLAG_LAYOUT_STABLE = 256,
         SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION = 512,
         SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN = 1024,
         SYSTEM_UI_FLAG_IMMERSIVE = 2048,
-        SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096,
-        SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 8192
+        SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096
     };
 
     constexpr int fullScreenFlags = SYSTEM_UI_FLAG_HIDE_NAVIGATION | SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-    constexpr int lightModeFlags = SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
     constexpr int FLAG_NOT_FOCUSABLE = 0x8;
 
     LocalRef<jobject> getCurrentOrMainActivity() noexcept
@@ -2065,45 +2062,77 @@ private:
     {
         LocalRef<jobject> activity (getMainActivity());
         
-        if (activity != nullptr)
+        if (activity == nullptr)
+            return;
+        
+        auto* env = getEnv();
+        LocalRef<jobject> mainWindow (env->CallObjectMethod (activity.get(), AndroidActivity.getWindow));
+        jclass windowClass = env->FindClass ("android/view/Window");
+        jclass viewClass = env->FindClass ("android/view/View");
+                                                                                                   
+        if (getAndroidSDKVersion() >= 30)
         {
-            auto* env = getEnv();
-            LocalRef<jobject> mainWindow (env->CallObjectMethod (activity.get(), AndroidActivity.getWindow));
-                                                                                               
-            if (getAndroidSDKVersion() < 30)
-            {
-                constexpr auto WHITE = 0xffffffff;
-                constexpr auto BLACK = 0xff000000;
+            jmethodID getInsetsControllerMethod = env->GetMethodID (windowClass, "getInsetsController", "()Landroid/view/WindowInsetsController;");
+            jobject insetsController = env->CallObjectMethod (mainWindow.get(), getInsetsControllerMethod);
             
-                if (getAndroidSDKVersion() < 27)
-                {
-                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, BLACK);
-                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, BLACK);
-                }
-                else
-                {
-                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setStatusBarColor, style == Style::light ? WHITE : BLACK);
-                    env->CallVoidMethod (mainWindow.get(), AndroidWindow.setNavigationBarColor, style == Style::light ? WHITE : BLACK);
-                }
-                
-                LocalRef<jobject> decorView (env->CallObjectMethod (mainWindow.get(), AndroidWindow.getDecorView));
-                LocalRef<jobject> rootView (env->CallObjectMethod (decorView.get(), AndroidView.getRootView));
-                
-                env->CallVoidMethod (rootView.get(), AndroidView.setBackgroundColor, style == Style::light ? WHITE : BLACK);
+            jclass windowInsetsControllerClass = env->FindClass ("android/view/WindowInsetsController");
+            jmethodID setSystemBarsAppearanceMethod = env->GetMethodID (windowInsetsControllerClass, "setSystemBarsAppearance", "(II)V");
+            
+            constexpr int APPEARANCE_LIGHT_STATUS_BARS = 1 << 3;
+            
+            env->CallVoidMethod (insetsController, setSystemBarsAppearanceMethod,
+                                 style == Style::light ? APPEARANCE_LIGHT_STATUS_BARS : 0, APPEARANCE_LIGHT_STATUS_BARS);
+            
+            constexpr int APPEARANCE_LIGHT_NAVIGATION_BARS = 1 << 4;
+            
+            env->CallVoidMethod (insetsController, setSystemBarsAppearanceMethod,
+                                 style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
+        }
+        else
+        {
+            constexpr int WHITE = 0xffffffff;
+            constexpr int BLACK = 0xff000000;
+        
+            jmethodID setStatusBarColorMethod = env->GetMethodID (windowClass, "setStatusBarColor", "(I)V");
+            jmethodID setNavigationBarColorMethod = env->GetMethodID (windowClass, "setNavigationBarColor", "(I)V");
+            
+            if (getAndroidSDKVersion() >= 27)
+            {
+                env->CallVoidMethod (mainWindow.get(), setStatusBarColorMethod, style == Style::light ? WHITE : BLACK);
+                env->CallVoidMethod (mainWindow.get(), setNavigationBarColorMethod, style == Style::light ? WHITE : BLACK);
             }
             else
             {
-                constexpr int APPEARANCE_LIGHT_STATUS_BARS = 1 << 3;
-                constexpr int APPEARANCE_LIGHT_NAVIGATION_BARS = 1 << 4;
-                
-                LocalRef<jobject> controller (env->CallObjectMethod (mainWindow.get(), AndroidWindow30.getInsetsController));
-                                     
-                env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
-                                     style == Style::light ? APPEARANCE_LIGHT_STATUS_BARS : 0, APPEARANCE_LIGHT_STATUS_BARS);
-                                     
-                env->CallVoidMethod (controller.get(), AndroidWindowInsetsController.setSystemBarsAppearance,
-                                     style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
+                env->CallVoidMethod (mainWindow.get(), setStatusBarColorMethod, BLACK);
+                env->CallVoidMethod (mainWindow.get(), setNavigationBarColorMethod, BLACK);
             }
+
+            jmethodID getDecorViewMethod = env->GetMethodID (windowClass, "getDecorView", "()Landroid/view/View;");
+            auto decorView = env->CallObjectMethod (mainWindow.get(), getDecorViewMethod);
+            
+            jmethodID setBackgroundColorMethod = env->GetMethodID (viewClass, "setBackgroundColor", "(I)V");
+            auto rootView = env->CallObjectMethod (decorView, AndroidView.getRootView);
+
+            env->CallVoidMethod (rootView, setBackgroundColorMethod, style == Style::light ? WHITE : BLACK);
+            
+            jmethodID getSystemUiVisibilityMethod = env->GetMethodID (viewClass, "getSystemUiVisibility", "()I");
+            auto flags = env->CallIntMethod (decorView, getSystemUiVisibilityMethod);
+            
+            constexpr int SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 8192;
+            constexpr int SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR = 16;
+            
+            if (style == Style::light)
+                flags |= SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            else
+                flags &= ~SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+
+            if (style == Style::light && getAndroidSDKVersion() >= 26)
+                flags |= SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            else
+                flags &= ~SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+
+            jmethodID setSystemUiVisibilityMethod = env->GetMethodID (viewClass, "setSystemUiVisibility", "(I)V");
+            env->CallVoidMethod (decorView, setSystemUiVisibilityMethod, flags);
         }
     }
 //^^^^^
@@ -2194,7 +2223,7 @@ private:
         flags |= FLAG_NOT_TOUCH_MODAL
                  | FLAG_LAYOUT_IN_SCREEN
                  | FLAG_LAYOUT_NO_LIMITS
-                 | FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+//                 | FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
                  | FLAG_TRANSLUCENT_NAVIGATION
                  | FLAG_TRANSLUCENT_STATUS;
         env->SetIntField (layoutParams, AndroidWindowManagerLayoutParams.flags, flags);

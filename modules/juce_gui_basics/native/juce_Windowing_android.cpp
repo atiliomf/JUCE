@@ -1024,10 +1024,13 @@ namespace
         SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION = 512,
         SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN = 1024,
         SYSTEM_UI_FLAG_IMMERSIVE = 2048,
-        SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096
+        SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096,
+        SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR = 16,
+        SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 8192
     };
 
     constexpr int fullScreenFlags = SYSTEM_UI_FLAG_HIDE_NAVIGATION | SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    constexpr int lightModeFlags = SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR | SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
     constexpr int FLAG_NOT_FOCUSABLE = 0x8;
 
     LocalRef<jobject> getCurrentOrMainActivity() noexcept
@@ -1495,7 +1498,6 @@ public:
                                      bounds.getY(),
                                      bounds.getRight(),
                                      bounds.getBottom());
-
             }
         }
         else
@@ -1593,15 +1595,19 @@ public:
     {
         // n/a
     }
-
+    
+    // MOD: scaling fix by peteatjuce
     bool contains (Point<int> localPos, bool trueIfInAChildWindow) const override
     {
+        if (trueIfInAChildWindow)
+            return view.callBooleanMethod (ComponentPeerView.containsPoint,
+                                           (float) localPos.x * scale,
+                                           (float) localPos.y * scale);
+
         return isPositiveAndBelow (localPos.x, component.getWidth())
-            && isPositiveAndBelow (localPos.y, component.getHeight())
-            && ((! trueIfInAChildWindow) || view.callBooleanMethod (ComponentPeerView.containsPoint,
-                                                                    (float) localPos.x * scale,
-                                                                    (float) localPos.y * scale));
+            && isPositiveAndBelow (localPos.y, component.getHeight());
     }
+    // END
 
     OptionalBorderSize getFrameSizeIfPresent() const override
     {
@@ -2079,16 +2085,13 @@ private:
             jmethodID setSystemBarsAppearanceMethod = env->GetMethodID (windowInsetsControllerClass, "setSystemBarsAppearance", "(II)V");
             
             constexpr int APPEARANCE_LIGHT_STATUS_BARS = 1 << 3;
-            
-            env->CallVoidMethod (insetsController, setSystemBarsAppearanceMethod,
-                                 style == Style::light ? APPEARANCE_LIGHT_STATUS_BARS : 0, APPEARANCE_LIGHT_STATUS_BARS);
-            
             constexpr int APPEARANCE_LIGHT_NAVIGATION_BARS = 1 << 4;
+            constexpr int LIGHT_MODE_FLAGS = APPEARANCE_LIGHT_STATUS_BARS | APPEARANCE_LIGHT_NAVIGATION_BARS;
             
             env->CallVoidMethod (insetsController, setSystemBarsAppearanceMethod,
-                                 style == Style::light ? APPEARANCE_LIGHT_NAVIGATION_BARS : 0, APPEARANCE_LIGHT_NAVIGATION_BARS);
+                                 style == Style::light ? LIGHT_MODE_FLAGS : 0, LIGHT_MODE_FLAGS);
         }
-        else
+        else // SDK >= 26
         {
             constexpr int WHITE = 0xffffffff;
             constexpr int BLACK = 0xff000000;
@@ -2096,17 +2099,11 @@ private:
             jmethodID setStatusBarColorMethod = env->GetMethodID (windowClass, "setStatusBarColor", "(I)V");
             jmethodID setNavigationBarColorMethod = env->GetMethodID (windowClass, "setNavigationBarColor", "(I)V");
             
-            if (getAndroidSDKVersion() >= 27)
-            {
-                env->CallVoidMethod (mainWindow.get(), setStatusBarColorMethod, style == Style::light ? WHITE : BLACK);
-                env->CallVoidMethod (mainWindow.get(), setNavigationBarColorMethod, style == Style::light ? WHITE : BLACK);
-            }
-            else
-            {
-                env->CallVoidMethod (mainWindow.get(), setStatusBarColorMethod, BLACK);
-                env->CallVoidMethod (mainWindow.get(), setNavigationBarColorMethod, BLACK);
-            }
-
+            auto color = (style == Style::light && getAndroidSDKVersion() >= 27) ? WHITE : BLACK;
+            
+            env->CallVoidMethod (mainWindow.get(), setStatusBarColorMethod, color);
+            env->CallVoidMethod (mainWindow.get(), setNavigationBarColorMethod, color);
+            
             jmethodID getDecorViewMethod = env->GetMethodID (windowClass, "getDecorView", "()Landroid/view/View;");
             auto decorView = env->CallObjectMethod (mainWindow.get(), getDecorViewMethod);
             
@@ -2118,22 +2115,20 @@ private:
             jmethodID getSystemUiVisibilityMethod = env->GetMethodID (viewClass, "getSystemUiVisibility", "()I");
             auto flags = env->CallIntMethod (decorView, getSystemUiVisibilityMethod);
             
-            constexpr int SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 8192;
             constexpr int SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR = 16;
+            constexpr int SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 8192;
+            constexpr int LIGHT_MODE_FLAGS = SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
             
             if (style == Style::light)
-                flags |= SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                flags |= LIGHT_MODE_FLAGS;
             else
-                flags &= ~SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-
-            if (style == Style::light && getAndroidSDKVersion() >= 26)
-                flags |= SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-            else
-                flags &= ~SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                flags &= ~LIGHT_MODE_FLAGS;
 
             jmethodID setSystemUiVisibilityMethod = env->GetMethodID (viewClass, "setSystemUiVisibility", "(I)V");
             env->CallVoidMethod (decorView, setSystemUiVisibilityMethod, flags);
         }
+        
+        setNavBarsHidden (navBarsHidden);
     }
 //^^^^^
 
@@ -2223,7 +2218,8 @@ private:
         flags |= FLAG_NOT_TOUCH_MODAL
                  | FLAG_LAYOUT_IN_SCREEN
                  | FLAG_LAYOUT_NO_LIMITS
-//                 | FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+//                 | FLAG_LAYOUT_INSET_DECOR
+                 | FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
                  | FLAG_TRANSLUCENT_NAVIGATION
                  | FLAG_TRANSLUCENT_STATUS;
         env->SetIntField (layoutParams, AndroidWindowManagerLayoutParams.flags, flags);
@@ -2248,7 +2244,7 @@ private:
     METHOD   (showKeyboard,                     "showKeyboard",                  "(III)V") \
     METHOD   (hideKeyboard,                     "hideKeyboard",                  "()V") \
     METHOD   (closeInputMethodContext,          "closeInputMethodContext",       "()V") \
-    METHOD   (setSystemUiVisibilityCompat,      "setSystemUiVisibilityCompat",   "(Landroid/view/Window;Z)V") \
+    METHOD   (setSystemUiVisibilityCompat,      "setSystemUiVisibilityCompat",   "(Landroid/view/Window;ZZ)V") \
     CALLBACK (generatedCallback<&AndroidComponentPeer::handleDoFrameCallback>,                    "handleDoFrame",                                    "(JJ)V") \
     CALLBACK (generatedCallback<&AndroidComponentPeer::handlePaintCallback>,                      "handlePaint",                                      "(JLandroid/graphics/Canvas;Landroid/graphics/Paint;)V") \
     CALLBACK (generatedCallback<&AndroidComponentPeer::handleKeyDownCallback>,                    "handleKeyDown",                                    "(JIII)V") \
@@ -2492,7 +2488,8 @@ private:
         getEnv()->CallVoidMethod (view,
                                   ComponentPeerView.setSystemUiVisibilityCompat,
                                   activityWindow.get(),
-                                  (jboolean) ! navBarsHidden);
+                                  (jboolean) ! navBarsHidden,
+                                  (jboolean) (style == Style::light));
     }
 
     template <typename Callback>
@@ -2516,6 +2513,7 @@ private:
     static constexpr jint FLAG_TRANSLUCENT_STATUS = 0x04000000;
     static constexpr jint FLAG_TRANSLUCENT_NAVIGATION = 0x08000000;
     static constexpr jint FLAG_LAYOUT_NO_LIMITS = 0x200;
+//    static constexpr jint FLAG_LAYOUT_INSET_DECOR = 0x00010000;
     static constexpr jint FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS = (jint) 0x80000000;
     static constexpr jint PIXEL_FORMAT_OPAQUE = -1, PIXEL_FORMAT_TRANSPARENT = -2;
     static constexpr jint LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS = 0x3;

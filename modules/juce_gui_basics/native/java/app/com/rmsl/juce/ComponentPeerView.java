@@ -34,11 +34,12 @@
 
 package com.rmsl.juce;
 
+import static android.view.WindowInsetsController.APPEARANCE_LIGHT_CAPTION_BARS;
+import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
 import static android.view.WindowInsetsController.BEHAVIOR_DEFAULT;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
-import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
-import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
 
 import android.app.Activity;
 import android.app.Application;
@@ -116,36 +117,7 @@ public final class ComponentPeerView extends ViewGroup
         colorMatrix.set (colorTransform);
         paint.setColorFilter (new ColorMatrixColorFilter (colorMatrix));
 
-        java.lang.reflect.Method method = null;
-
-        try
-        {
-            method = getClass().getMethod ("setLayerType", int.class, Paint.class);
-        }
-        catch (SecurityException e)
-        {
-        }
-        catch (NoSuchMethodException e)
-        {
-        }
-
-        if (method != null)
-        {
-            try
-            {
-                int layerTypeNone = 0;
-                method.invoke (this, layerTypeNone, null);
-            }
-            catch (java.lang.IllegalArgumentException e)
-            {
-            }
-            catch (java.lang.IllegalAccessException e)
-            {
-            }
-            catch (java.lang.reflect.InvocationTargetException e)
-            {
-            }
-        }
+        setLayerType (LAYER_TYPE_NONE, null);
 
         Choreographer.getInstance().postFrameCallback (this);
     }
@@ -806,65 +778,64 @@ public final class ComponentPeerView extends ViewGroup
     {
     }
 
-public void setSystemUiVisibilityCompat (Window window, boolean visible, boolean lightMode)
-{
-    if (30 <= Build.VERSION.SDK_INT)
+    public void setSystemUiVisibilityCompat (Window window, boolean visible, boolean isLight)
     {
-        WindowInsetsController controller = getWindowInsetsController();
-
-        if (controller != null)
+        if (30 <= Build.VERSION.SDK_INT)
         {
-            if (visible)
-            {
-                controller.show (WindowInsets.Type.systemBars());
-                controller.setSystemBarsBehavior (31 <= Build.VERSION.SDK_INT ? BEHAVIOR_DEFAULT
-                                                                              : BEHAVIOR_SHOW_BARS_BY_SWIPE);
-            }
-            else
-            {
-                controller.hide (WindowInsets.Type.systemBars());
-                controller.setSystemBarsBehavior (BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            }
-            
-            final int mask = APPEARANCE_LIGHT_NAVIGATION_BARS
-                           | APPEARANCE_LIGHT_STATUS_BARS;
-                               
-            controller.setSystemBarsAppearance (lightMode ? mask : 0, mask);
+            WindowInsetsController controller = getWindowInsetsController();
 
+            if (controller != null)
+            {
+                if (visible)
+                {
+                    controller.show (WindowInsets.Type.systemBars());
+                    controller.setSystemBarsBehavior (31 <= Build.VERSION.SDK_INT ? BEHAVIOR_DEFAULT
+                                                                                  : BEHAVIOR_SHOW_BARS_BY_SWIPE);
+                }
+                else
+                {
+                    controller.hide (WindowInsets.Type.systemBars());
+                    controller.setSystemBarsBehavior (BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                }
+
+                final int mask = (35 <= Build.VERSION.SDK_INT ? APPEARANCE_LIGHT_CAPTION_BARS : 0)
+                               | APPEARANCE_LIGHT_NAVIGATION_BARS
+                               | APPEARANCE_LIGHT_STATUS_BARS;
+                controller.setSystemBarsAppearance (isLight ? mask : 0, mask);
+
+                return;
+            }
+        }
+
+        if (window == null)
             return;
+
+        // Displays::findDisplays queries the DecorView to determine the
+        // most recently-requested visibility state of the system UI.
+        // As we're creating new top-level views via WindowManager,
+        // updating only the DecorView isn't sufficient to hide the global
+        // system UI; we also need to update the view that was added to
+        // the WindowManager.
+        ArrayList<View> views = new ArrayList<>();
+        views.add (window.getDecorView());
+        views.add (this);
+
+        for (View view : views)
+        {
+            final int lightStyle = (26 <= Build.VERSION.SDK_INT ? SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : 0)
+                                 | SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            final int prevFlags = view.getSystemUiVisibility();
+            final int fullScreenFlags = SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                      | SYSTEM_UI_FLAG_FULLSCREEN
+                                      | SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            final int withVisibility = visible ? (prevFlags & ~fullScreenFlags)
+                                               : (prevFlags |  fullScreenFlags);
+            final int withColour = isLight ? (withVisibility |  lightStyle)
+                                           : (withVisibility & ~lightStyle);
+
+            view.setSystemUiVisibility (withColour);
         }
     }
-
-    if (window == null)
-        return;
-
-    // Displays::findDisplays queries the DecorView to determine the
-    // most recently-requested visibility state of the system UI.
-    // As we're creating new top-level views via WindowManager,
-    // updating only the DecorView isn't sufficient to hide the global
-    // system UI; we also need to update the view that was added to
-    // the WindowManager.
-    ArrayList<View> views = new ArrayList<>();
-    views.add (window.getDecorView());
-    views.add (this);
-
-    for (View view : views)
-    {
-        final int prevFlags = view.getSystemUiVisibility();
-        final int fullScreenFlags = SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                  | SYSTEM_UI_FLAG_FULLSCREEN
-                                  | SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        int newFlags = visible ? (prevFlags & ~fullScreenFlags)
-                               : (prevFlags |  fullScreenFlags);
-                                     
-        final int lightModeFlags = SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                                 | SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        newFlags = lightMode ? (newFlags | lightModeFlags)
-                             : (newFlags &~ lightModeFlags);
-
-        view.setSystemUiVisibility (newFlags);
-    }
-}
 
     public boolean isVisible()
     {

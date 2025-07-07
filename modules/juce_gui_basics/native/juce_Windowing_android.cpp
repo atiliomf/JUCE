@@ -2496,7 +2496,7 @@ private:
         // vvvvv
             LocalRef<jobject> activity (getMainActivity());
             
-            if (activity == nullptr)
+            if (activity == nullptr || ! MessageManager::getInstance()->isThisTheMessageThread())
                 return;
             
             auto* env = getEnv();
@@ -2509,9 +2509,9 @@ private:
             constexpr int BLACK = 0xff000000;
             auto color = (style == Style::light && getAndroidSDKVersion() >= 27) ? WHITE : BLACK;
                 
-            env->CallVoidMethod (mainWindow.get(), env->GetMethodID (windowClass, "setStatusBarColor", "(I)V"), color);
             env->CallVoidMethod (mainWindow.get(), env->GetMethodID (windowClass, "setNavigationBarColor", "(I)V"), color);
-                
+            env->CallVoidMethod (mainWindow.get(), env->GetMethodID (windowClass, "setStatusBarColor", "(I)V"), color);
+
             auto decorView = env->CallObjectMethod (mainWindow.get(), env->GetMethodID (windowClass, "getDecorView", "()Landroid/view/View;"));
             auto rootView = env->CallObjectMethod (decorView, AndroidView.getRootView);
 

@@ -2760,25 +2760,29 @@ private:
         if (area == WindowArea::nonclient && captionMouseDown.has_value() && *captionMouseDown != lParam)
         {
             captionMouseDown.reset();
-
-            // When clicking and dragging on the caption area, a new modal loop is started
-            // inside DefWindowProc. This modal loop appears to consume some mouse events,
-            // without forwarding them back to our own window proc. In particular, we never
-            // get to see the WM_NCLBUTTONUP event with the HTCAPTION argument, or any other
-            // kind of mouse-up event to signal that the loop exited, so
-            // ModifierKeys::currentModifiers gets left in the wrong state. As a workaround, we
-            // manually update the modifier keys after DefWindowProc exits, and update the
-            // capture state if necessary.
-            const auto result = DefWindowProc (hwnd, WM_NCLBUTTONDOWN, HTCAPTION, lParam);
-            getMouseModifiers();
-            releaseCaptureIfNecessary();
-            return result;
+            return handleNcMouseEventThenFixModifiers (WM_NCLBUTTONDOWN, HTCAPTION, lParam);
         }
 
         const auto position = area == WindowArea::client ? getPointFromLocalLParam (lParam)
                                                          : getLocalPointFromScreenLParam (lParam);
 
         return doMouseMoveAtPoint (isMouseDownEvent, area, position);
+    }
+
+    LRESULT handleNcMouseEventThenFixModifiers (UINT msg, WPARAM wParam, LPARAM lParam)
+    {
+        // When clicking and dragging on the caption area (including in the edge resize areas), a
+        // new modal loop is started inside DefWindowProc. This modal loop appears to consume some
+        // mouse events, without forwarding them back to our own window proc. In particular, we
+        // never get to see the WM_NCLBUTTONUP event with the HTCAPTION argument, or any other
+        // kind of mouse-up event to signal that the loop exited, so
+        // ModifierKeys::currentModifiers gets left in the wrong state. As a workaround, we
+        // manually update the modifier keys after DefWindowProc exits, and update the
+        // capture state if necessary.
+        const auto result = DefWindowProc (hwnd, msg, wParam, lParam);
+        getMouseModifiers();
+        releaseCaptureIfNecessary();
+        return result;
     }
 
     void updateModifiersFromModProvider() const
@@ -3555,7 +3559,14 @@ private:
             const ScopedValueSetter<bool> scope (inHandlePositionChanged, true);
 
             if (! areOtherTouchSourcesActive())
-                doMouseEvent (pos, MouseInputSource::defaultPressure);
+            {
+                auto modsToSend = ModifierKeys::getCurrentModifiers();
+
+                if (! Desktop::getInstance().getMainMouseSource().isDragging())
+                    modsToSend = modsToSend.withoutMouseButtons();
+
+                doMouseEvent (pos, MouseInputSource::defaultPressure, 0.0f, modsToSend);
+            }
 
             if (! isValidPeer (this))
                 return true;
@@ -4347,7 +4358,7 @@ private:
                 if (auto result = onNcLButtonDown (wParam, lParam))
                     return *result;
 
-                break;
+                return handleNcMouseEventThenFixModifiers (WM_NCLBUTTONDOWN, wParam, lParam);
             }
 
             case WM_NCLBUTTONUP:
@@ -5875,13 +5886,25 @@ void Desktop::setKioskComponent (Component* kioskModeComp, bool enableOrDisable,
     if (auto* peer = dynamic_cast<HWNDComponentPeer*> (kioskModeComp->getPeer()))
     {
         const auto prevFlags = (DWORD) GetWindowLong (peer->getHWND(), GWL_STYLE);
-        const auto nextFlags = peer->computeNativeStyleFlags();
+        const auto nextVisibility = prevFlags & WS_VISIBLE;
+        const auto nextFlags = peer->computeNativeStyleFlags() | nextVisibility;
 
         if (nextFlags != prevFlags)
         {
-            const auto styleFlags = peer->getStyleFlags();
-            kioskModeComp->removeFromDesktop();
-            kioskModeComp->addToDesktop (styleFlags);
+            SetWindowLong (peer->getHWND(), GWL_STYLE, nextFlags);
+
+            // After changing the window style flags, the window border visibility may have changed.
+            // Call SetWindowPos with no changes other than SWP_FRAMECHANGED to ensure that
+            // GetWindowInfo returns up-to-date border-size values.
+            static constexpr auto frameChangeOnly = SWP_NOSIZE
+                                                  | SWP_NOMOVE
+                                                  | SWP_NOZORDER
+                                                  | SWP_NOREDRAW
+                                                  | SWP_NOACTIVATE
+                                                  | SWP_FRAMECHANGED
+                                                  | SWP_NOOWNERZORDER
+                                                  | SWP_NOSENDCHANGING;
+            SetWindowPos (peer->getHWND(), nullptr, 0, 0, 0, 0, frameChangeOnly);
         }
     }
     else

@@ -45,6 +45,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
@@ -780,12 +781,24 @@ public final class ComponentPeerView extends ViewGroup
 
     public void setSystemUiVisibilityCompat (Window window, boolean visible, boolean isLight)
     {
+        if (window != null)
+        {
+            // Although this is deprecated in Android 35+, it still seems to be necessary
+            // to adjust the colour of the nav bar icons when in button-mode.
+            window.setNavigationBarColor (isLight ? Color.BLACK : Color.WHITE);
+        }
+
         if (30 <= Build.VERSION.SDK_INT)
         {
             WindowInsetsController controller = getWindowInsetsController();
 
             if (controller != null)
             {
+                final int mask = (35 <= Build.VERSION.SDK_INT ? APPEARANCE_LIGHT_CAPTION_BARS : 0)
+                               | APPEARANCE_LIGHT_NAVIGATION_BARS
+                               | APPEARANCE_LIGHT_STATUS_BARS;
+                controller.setSystemBarsAppearance (isLight ? mask : 0, mask);
+
                 if (visible)
                 {
                     controller.show (WindowInsets.Type.systemBars());

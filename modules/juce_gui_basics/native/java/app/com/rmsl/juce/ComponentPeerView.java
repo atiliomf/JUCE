@@ -811,11 +811,6 @@ public final class ComponentPeerView extends ViewGroup
                     controller.setSystemBarsBehavior (BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
                 }
 
-                final int mask = (35 <= Build.VERSION.SDK_INT ? APPEARANCE_LIGHT_CAPTION_BARS : 0)
-                               | APPEARANCE_LIGHT_NAVIGATION_BARS
-                               | APPEARANCE_LIGHT_STATUS_BARS;
-                controller.setSystemBarsAppearance (isLight ? mask : 0, mask);
-
                 return;
             }
         }

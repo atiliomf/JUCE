@@ -2495,29 +2495,6 @@ private:
                                   activityWindow.get(),
                                   (jboolean) ! navBarsHidden,
                                   (jboolean) (getAppStyle() == Style::light));
-                 
-           // LocalRef<jobject> activity (getMainActivity());
-           // 
-           // if (activity == nullptr || ! MessageManager::getInstance()->isThisTheMessageThread())
-           //     return;
-           // 
-           // auto* env = getEnv();
-           // LocalRef<jobject> mainWindow (env->CallObjectMethod (activity.get(), AndroidActivity.getWindow));
-           // 
-           // jclass windowClass = env->FindClass ("android/view/Window");
-           // jclass viewClass = env->FindClass ("android/view/View");
-           //                                                                                            
-           // constexpr int WHITE = 0xffffffff;
-           // constexpr int BLACK = 0xff000000;
-           // auto color = (style == Style::light && getAndroidSDKVersion() >= 27) ? WHITE : BLACK;
-           //     
-           // env->CallVoidMethod (mainWindow.get(), env->GetMethodID (windowClass, "setNavigationBarColor", "(I)V"), color);
-           // env->CallVoidMethod (mainWindow.get(), env->GetMethodID (windowClass, "setStatusBarColor", "(I)V"), color);
-
-           // auto decorView = env->CallObjectMethod (mainWindow.get(), env->GetMethodID (windowClass, "getDecorView", "()Landroid/view/View;"));
-           // auto rootView = env->CallObjectMethod (decorView, AndroidView.getRootView);
-
-           // env->CallVoidMethod (rootView, env->GetMethodID (viewClass, "setBackgroundColor", "(I)V"), style == Style::light ? WHITE : BLACK);                       
     }
 
     template <typename Callback>

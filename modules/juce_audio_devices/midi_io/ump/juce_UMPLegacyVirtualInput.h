@@ -32,24 +32,50 @@
   ==============================================================================
 */
 
-#ifndef DOXYGEN
-
 namespace juce::universal_midi_packets
 {
 
 /**
-    A base class for classes which receive Universal MIDI Packets from an input.
+    Represents a virtual MIDI 1.0 input port.
 
     @tags{Audio}
 */
-struct Receiver
+class LegacyVirtualInput
 {
-    virtual ~Receiver() noexcept = default;
+public:
+    /** Creates an invalid virtual port that doesn't correspond to any virtual device. */
+    LegacyVirtualInput();
+    ~LegacyVirtualInput();
 
-    /** This will be called each time a new packet is ready for processing. */
-    virtual void packetReceived (const View& packet, double time) = 0;
+    LegacyVirtualInput (LegacyVirtualInput&&) noexcept;
+    LegacyVirtualInput& operator= (LegacyVirtualInput&&) noexcept;
+
+    LegacyVirtualInput (const LegacyVirtualInput&) = delete;
+    LegacyVirtualInput& operator= (const LegacyVirtualInput&) = delete;
+
+    /** Retrieves the unique id of this input.
+
+        You can pass this ID to Session::connectInput() in order to receive messages sent to this
+        input.
+
+        Note that this ID is *not* guaranteed to be stable - creating the 'same' virtual device
+        across several program invocations may produce a different ID each time.
+
+        To fetch the current details of this device, you can pass this ID to Endpoints::getEndpoint().
+    */
+    EndpointId getId() const;
+
+    bool isAlive() const;
+
+    explicit operator bool() const { return isAlive(); }
+
+    /** @internal */
+    class Impl;
+
+private:
+    explicit LegacyVirtualInput (std::unique_ptr<Impl>);
+
+    std::unique_ptr<Impl> impl;
 };
 
-} // namespace juce::universal_midi_packets
-
-#endif
+}

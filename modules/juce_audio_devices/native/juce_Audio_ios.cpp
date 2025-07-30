@@ -361,20 +361,37 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
         close();
     }
 
+    inline static bool bluetoothLowLatencyEnabled;
+    
+    bool enableBluetoothSCO (bool enable)
+    {
+        bluetoothLowLatencyEnabled = enable;
+        return true;
+    }
+
     static void setAudioSessionCategory (NSString* category)
     {
         NSUInteger options = 0;
+        
+        bool bluetooth = false;
+        
+        for (AVAudioSessionPortDescription* port in [AVAudioSession sharedInstance].currentRoute.outputs)
+            if ([port.portType containsString: @"Bluetooth"])
+                bluetooth = true;
+        
+        if (! bluetooth && category == AVAudioSessionCategoryPlayAndRecord)
+            category = AVAudioSessionCategoryMultiRoute;
 
        #if ! JUCE_DISABLE_AUDIO_MIXING_WITH_OTHER_APPS
-        options |= AVAudioSessionCategoryOptionMixWithOthers; // Alternatively AVAudioSessionCategoryOptionDuckOthers
+        options |= AVAudioSessionCategoryOptionMixWithOthers;
        #endif
 
         if (category == AVAudioSessionCategoryPlayAndRecord)
         {
            #if JUCE_IOS_API_VERSION_CAN_BE_BUILT (26, 0)
-            constexpr auto bluetoothOption = AVAudioSessionCategoryOptionAllowBluetoothHFP;
+            auto bluetoothOption = bluetoothLowLatencyEnabled ? AVAudioSessionCategoryOptionAllowBluetoothHFP : 0;
            #else
-            constexpr auto bluetoothOption = AVAudioSessionCategoryOptionAllowBluetooth;
+            auto bluetoothOption = bluetoothLowLatencyEnabled ? AVAudioSessionCategoryOptionAllowBluetooth : 0;
            #endif
 
             options |= AVAudioSessionCategoryOptionDefaultToSpeaker
@@ -691,9 +708,10 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
                             << ", targetSampleRate: " << targetSampleRate
                             << ", targetBufferSize: " << targetBufferSize);
 
-        setAudioSessionActive (true);
+        setAudioSessionActive (false);
         setAudioSessionCategory (requestedInputChannels > 0 ? AVAudioSessionCategoryPlayAndRecord
                                                             : AVAudioSessionCategoryPlayback);
+        setAudioSessionActive (true);
         channelData.reconfigure (requestedInputChannels, requestedOutputChannels);
         setTargetSampleRateAndBufferSize();
         updateHardwareInfo (true);
@@ -764,41 +782,6 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
                 lastCallback->audioDeviceStopped();
         }
     }
-
-//vvv Changes to let Bluetooth HFP to be set programatically
-    bool isBluetoothDevice()
-    {
-        for (AVAudioSessionPortDescription* port in [AVAudioSession sharedInstance].currentRoute.outputs)
-            if ([port.portType containsString: @"Bluetooth"])
-                return true;
-        
-        return false;
-    }
-    
-    bool isHFPdevice()
-    {
-        for (AVAudioSessionPortDescription* port in [[AVAudioSession sharedInstance] availableInputs])
-            if ([port.portType containsString: AVAudioSessionPortBluetoothHFP])
-                return true;
-
-        return false;
-    }
-    
-    bool enableBluetoothSCO (bool enable)
-    {
-        NSString* mode = (enable && isBluetoothDevice() && isHFPdevice() ? AVAudioSessionModeVoiceChat
-                                                                         : AVAudioSessionModeDefault);
-        NSError* error = nil;
-        
-        auto session = [AVAudioSession sharedInstance];
-        
-        [session setMode: mode
-                   error: &error];
-        
-        return session.mode == mode
-                   && error != nil;
-    }
-//^^^
 
     bool setAudioPreprocessingEnabled (bool enable)
     {

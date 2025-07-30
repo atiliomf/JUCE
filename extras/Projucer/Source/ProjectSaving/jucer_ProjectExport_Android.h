@@ -1419,9 +1419,9 @@ private:
             device->setAttribute ("manufacturer", project.getCompanyNameString());
             device->setAttribute ("product", projectName);
 
-            const auto deviceName = (project.getCompanyNameString().isNotEmpty() ? (project.getCompanyNameString() + " ") : "")
-                                  + projectName;
-            device->setAttribute ("name", deviceName);
+//            const auto deviceName = (project.getCompanyNameString().isNotEmpty() ? (project.getCompanyNameString() + " ") : "")
+//                                  + projectName;
+            device->setAttribute ("name", projectName); // deviceName
             return device;
         };
 

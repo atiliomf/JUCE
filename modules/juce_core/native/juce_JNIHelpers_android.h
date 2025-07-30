@@ -762,6 +762,12 @@ DECLARE_JNI_CLASS (AndroidWindow, "android/view/Window")
 #undef JNI_CLASS_MEMBERS
 
 #define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
+ METHOD (setNavigationBarContrastEnforced, "setNavigationBarContrastEnforced", "(Z)V") \
+ 
+DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidWindow29, "android/view/Window", 29)
+#undef JNI_CLASS_MEMBERS
+
+#define JNI_CLASS_MEMBERS(METHOD, STATICMETHOD, FIELD, STATICFIELD, CALLBACK) \
  METHOD (getInsetsController, "getInsetsController", "()Landroid/view/WindowInsetsController;")
 
 DECLARE_JNI_CLASS_WITH_MIN_SDK (AndroidWindow30, "android/view/Window", 30)

@@ -60,27 +60,15 @@ class ConsoleUnitTestRunner final : public UnitTestRunner
 //==============================================================================
 int main (int argc, char **argv)
 {
-    constexpr auto helpOption = "--help|-h";
-    constexpr auto listOption = "--list-categories|-l";
-    constexpr auto categoryOption = "--category|-c";
-    constexpr auto seedOption = "--seed|-s";
-    constexpr auto nameOption = "--name|-n";
-
     ArgumentList args (argc, argv);
 
-    if (args.containsOption (helpOption))
+    if (args.containsOption ("--help|-h"))
     {
-        std::cout << argv[0]
-                  << " [" << helpOption << "]"
-                  << " [" << listOption << "]"
-                  << " [" << categoryOption << "=category]"
-                  << " [" << seedOption << "=seed]"
-                  << " [" << nameOption << "=name]"
-                  << std::endl;
+        std::cout << argv[0] << " [--help|-h] [--list-categories] [--category=category] [--seed=seed]" << std::endl;
         return 0;
     }
 
-    if (args.containsOption (listOption))
+    if (args.containsOption ("--list-categories"))
     {
         for (auto& category : UnitTest::getAllCategories())
             std::cout << category << std::endl;
@@ -91,19 +79,13 @@ int main (int argc, char **argv)
     ConsoleLogger logger;
     Logger::setCurrentLogger (&logger);
 
-    const ScopeGuard onExit { [&]
-    {
-        Logger::setCurrentLogger (nullptr);
-        DeletedAtShutdown::deleteAll();
-    }};
-
     ConsoleUnitTestRunner runner;
 
-    const auto seed = std::invoke ([&]
+    auto seed = [&args]
     {
-        if (args.containsOption (seedOption))
+        if (args.containsOption ("--seed"))
         {
-            auto seedValueString = args.getValueForOption (seedOption);
+            auto seedValueString = args.getValueForOption ("--seed");
 
             if (seedValueString.startsWith ("0x"))
                 return seedValueString.getHexValue64();
@@ -112,12 +94,10 @@ int main (int argc, char **argv)
         }
 
         return Random::getSystemRandom().nextInt64();
-    });
+    }();
 
-    if (args.containsOption (categoryOption))
-        runner.runTestsInCategory (args.getValueForOption (categoryOption), seed);
-    else if (args.containsOption (nameOption))
-        runner.runTestsWithName (args.getValueForOption (nameOption), seed);
+    if (args.containsOption ("--category"))
+        runner.runTestsInCategory (args.getValueForOption ("--category"), seed);
     else
         runner.runAllTests (seed);
 
@@ -128,28 +108,24 @@ int main (int argc, char **argv)
         auto* result = runner.getResult (i);
 
         if (result->failures > 0)
-        {
-            const auto testName = result->unitTestName + " / " + result->subcategoryName;
-            const auto testSummary = String (result->failures) + " test failure" + (result->failures > 1 ? "s" : "");
-            const auto newLineAndTab = newLine + "\t";
-
-            failures.push_back (testName + ": " + testSummary + newLineAndTab
-                                + result->messages.joinIntoString (newLineAndTab));
-        }
+            failures.push_back (result->unitTestName + " / " + result->subcategoryName + ": " + String (result->failures) + " test failure" + (result->failures > 1 ? "s" : ""));
     }
-
-    logger.writeToLog (newLine + String::repeatedString ("-", 65));
 
     if (! failures.empty())
     {
-        logger.writeToLog ("Test failure summary:");
+        logger.writeToLog (newLine + "Test failure summary:" + newLine);
 
         for (const auto& failure : failures)
-            logger.writeToLog (newLine + failure);
+            logger.writeToLog (failure);
 
+        Logger::setCurrentLogger (nullptr);
         return 1;
     }
 
-    logger.writeToLog ("All tests completed successfully");
+    logger.writeToLog (newLine + "All tests completed successfully");
+    Logger::setCurrentLogger (nullptr);
+
+    DeletedAtShutdown::deleteAll();
+
     return 0;
 }

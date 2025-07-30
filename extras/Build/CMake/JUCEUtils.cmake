@@ -492,16 +492,7 @@ function(juce_add_binary_data target)
     endforeach()
 
     set(input_file_list "${juce_binary_data_folder}/input_file_list")
-
-    set(old_input_file_list "")
-
-    if(EXISTS "${input_file_list}")
-        file(READ "${input_file_list}" old_input_file_list)
-    endif()
-
-    if(NOT "${old_input_file_list}" STREQUAL "${newline_delimited_input}")
-        file(WRITE "${input_file_list}" "${newline_delimited_input}")
-    endif()
+    file(WRITE "${input_file_list}" "${newline_delimited_input}")
 
     add_custom_command(OUTPUT ${binary_file_names}
         COMMAND juce::juceaide binarydata "${JUCE_ARG_NAMESPACE}" "${JUCE_ARG_HEADER_NAME}"

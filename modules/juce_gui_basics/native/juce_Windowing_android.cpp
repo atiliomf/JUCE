@@ -1636,7 +1636,7 @@ public:
 
     void setFullScreen (bool shouldBeFullScreen) override
     {
-        setNavBarsHidden (shouldNavBarsBeHidden (shouldBeFullScreen));
+        refreshSystemBarsAndSetHidden (shouldNavBarsBeHidden (shouldBeFullScreen));
 
         auto newBounds = std::invoke ([&]
         {

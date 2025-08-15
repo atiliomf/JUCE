@@ -131,22 +131,12 @@ LiveValueBase::~LiveValueBase()
 LivePropertyEditorBase::LivePropertyEditorBase (LiveValueBase& v, CodeDocument& d)
     : value (v), document (d), sourceEditor (document, &tokeniser)
 {
-#if JUCE_IOS || JUCE_ANDROID
-    setSize (200, 50);
-
-    addAndMakeVisible (name);
-    addAndMakeVisible (resetButton);
-    addAndMakeVisible (valueEditor);
-    valueEditor.setReadOnly (true);
-    //addAndMakeVisible (sourceEditor);
-#else
     setSize (600, 100);
 
     addAndMakeVisible (name);
     addAndMakeVisible (resetButton);
     addAndMakeVisible (valueEditor);
     addAndMakeVisible (sourceEditor);
-#endif
 
     findOriginalValueInCode();
     selectOriginalValue();
@@ -171,13 +161,7 @@ void LivePropertyEditorBase::paint (Graphics& g)
 void LivePropertyEditorBase::resized()
 {
     auto r = getLocalBounds().reduced (0, 3).withTrimmedBottom (1);
-
-#if JUCE_IOS || JUCE_ANDROID
-    auto left = r.removeFromLeft (jmax (200, r.getWidth()));
-#else
     auto left = r.removeFromLeft (jmax (200, r.getWidth() / 3));
-#endif
-
     auto top = left.removeFromTop (25);
     resetButton.setBounds (top.removeFromRight (35).reduced (0, 3));
     name.setBounds (top);
@@ -192,11 +176,6 @@ void LivePropertyEditorBase::resized()
     {
         valueEditor.setBounds (left);
     }
-
-#if ! (JUCE_IOS || JUCE_ANDROID)
-    r.removeFromLeft (4);
-    sourceEditor.setBounds (r);
-#endif
 }
 
 void LivePropertyEditorBase::applyNewValue (const String& s)
@@ -333,17 +312,9 @@ public:
         setLookAndFeel (&lookAndFeel);
         setUsingNativeTitleBar (true);
         
-#if JUCE_IOS || JUCE_ANDROID
-        setResizable (false, false);
-        setResizeLimits (200, 200, 200, 300);
-        viewport.setSize (200, 150);
-        setAlwaysOnTop (true);
-#else
         setResizable (true, false);
         setResizeLimits (500, 400, 10000, 10000);
         viewport.setSize (700, 600);
-#endif
-
         viewport.setViewedComponent (new ValueListHolderComponent (list), true);
         viewport.setScrollBarsShown (true, false);
         setContentNonOwned (&viewport, true);

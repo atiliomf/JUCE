@@ -255,7 +255,7 @@ namespace juce::LiveConstantEditor
 #endif
 
 //==============================================================================
-#if JUCE_ENABLE_LIVE_CONSTANT_EDITOR || DOXYGEN
+#if (JUCE_ENABLE_LIVE_CONSTANT_EDITOR || DOXYGEN) && ! (JUCE_IOS || JUCE_ANDROID)
  /**
     This macro wraps a primitive constant value in some cunning boilerplate code that allows
     its value to be interactively tweaked in a popup window while your application is running.

@@ -97,9 +97,9 @@ struct Viewport::DragToScrollListener final : private MouseListener,
                 isDragging = true;
 
                 originalViewPos = viewport.getViewPosition();
-                offsetX.setPosition (0.0);
+                offsetX.setPosition (-totalOffset.getX());
                 offsetX.beginDrag();
-                offsetY.setPosition (0.0);
+                offsetY.setPosition (-totalOffset.getY());
                 offsetY.beginDrag();
             }
 

@@ -246,7 +246,7 @@ private:
 
             g.fillAll (Colours::white);
 
-            const float xmargin = 3.0f;
+            const float xmargin = 8.0f;
             const float ymargin = 3.0f;
             const float fontHeight = 0.4f * (float) height;
             const float deviceNameWidth = 0.6f * (float) width;
@@ -265,7 +265,7 @@ private:
                         Justification::topRight, true);
 
             g.setColour (Colours::grey);
-            g.drawHorizontalLine (height - 1, xmargin, (float) width);
+            g.drawHorizontalLine (height - 1, 0, (float) width);
         }
     }
 
@@ -430,12 +430,8 @@ public:
         auto& desktop = Desktop::getInstance();
         enabledOrientations = desktop.getOrientationsEnabled();
         desktop.setOrientationsEnabled (desktop.getCurrentOrientation());
-        kioskModeComponent = desktop.getKioskModeComponent();
         
-        if (kioskModeComponent != nullptr)
-            kioskModeComponent->addChildComponent (this);
-        else
-            addToDesktop (ComponentPeer::windowHasDropShadow);
+        desktop.getComponent(0)->getTopLevelComponent()->addChildComponent (this);
     
         toFront (true);
         setAlwaysOnTop (true);
@@ -460,17 +456,18 @@ public:
         g.fillRect (overlayBounds);
 
         g.setColour (Colours::black);
-        g.setFont (16);
+        g.setFont (20);
         g.drawText (TRANS ("Bluetooth MIDI Devices"),
-                    overlayBounds.removeFromTop (20).reduced (3, 3),
+                    overlayBounds.removeFromTop (20).reduced (8, 5),
                     Justification::topLeft, true);
 
         overlayBounds.removeFromTop (2);
 
-        g.setFont (12);
-        g.drawText (TRANS ("Tap on a device on the list to connect/disconnect"),
-                    overlayBounds.removeFromTop (18).reduced (3, 3),
-                    Justification::topLeft, true);
+        g.setFont (17);
+        g.drawFittedText (TRANS ("Tap on a device on the list to connect/disconnect") + ". " +
+                          TRANS ("Note: pairing with MacOS or Windows is not supported, please use OSC instead!"),
+                    overlayBounds.removeFromTop (80).reduced (8, 5),
+                    Justification::topLeft, 3);
     }
 
     void inputAttemptWhenModal() override           { exitModalState (0); }
@@ -489,7 +486,7 @@ private:
         else
             setBounds (bounds);
 
-        bluetoothDevicesList.setBounds (getOverlayBounds().withTrimmedTop (40));
+        bluetoothDevicesList.setBounds (getOverlayBounds().withTrimmedTop (90));
     }
 
     Rectangle<int> getOverlayBounds() const noexcept

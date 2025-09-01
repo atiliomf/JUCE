@@ -1080,6 +1080,8 @@ private:
 
         // Silences warning when Google Play Billing v7 is enabled
         result << "android.useAndroidX=true" << newLine;
+        result << "org.gradle.jvmargs=-Xmx4096m" << newLine;
+        result << "android.javaCompile.suppressSourceTargetDeprecationWarning=true" << newLine;
 
         return replaceLineFeeds (result, getNewLineString());
     }
@@ -1914,7 +1916,7 @@ private:
         setAttributeIfNotPresent (*act, "android:name", getActivityClassString());
 
         if (! act->hasAttribute ("android:configChanges"))
-            act->setAttribute ("android:configChanges", "keyboard|keyboardHidden|orientation|screenSize|navigation|smallestScreenSize|screenLayout");
+            act->setAttribute ("android:configChanges", "keyboard|keyboardHidden|orientation|screenSize|navigation|smallestScreenSize|screenLayout|uiMode");
 
         if (androidScreenOrientation.get() != "unspecified")
         {

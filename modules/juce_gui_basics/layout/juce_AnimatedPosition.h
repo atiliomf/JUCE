@@ -177,7 +177,7 @@ private:
     void moveTo (double newPos)
     {
         auto now = Time::getCurrentTime();
-        releaseVelocity = getSpeed (lastDrag, position, now, newPos);
+        releaseVelocity = releaseVelocity * 0.2 + getSpeed (lastDrag, position, now, newPos) * 0.8;
         behaviour.releasedWithVelocity (newPos, releaseVelocity);
         lastDrag = now;
 

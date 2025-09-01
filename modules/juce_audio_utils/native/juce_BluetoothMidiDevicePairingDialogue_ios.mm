@@ -42,12 +42,13 @@ class BluetoothMidiSelectorOverlay final : public Component
 {
 public:
     BluetoothMidiSelectorOverlay (ModalComponentManager::Callback* exitCallbackToUse,
-                                  const Rectangle<int>& boundsToUse)
+                                  const Rectangle<int>& boundsToUse,
+                                  bool advertiseAlsPeriferal)
         : bounds (boundsToUse)
     {
         std::unique_ptr<ModalComponentManager::Callback> exitCallback (exitCallbackToUse);
 
-        update();
+        update(); // sets bounds
 
         kioskModeComponent = Desktop::getInstance().getKioskModeComponent();
 
@@ -60,8 +61,18 @@ public:
         setAlwaysOnTop (true);
         setVisible (true);
 
-        controller = [[CABTMIDICentralViewController alloc] init];
-        nativeSelectorComponent.setView ([controller view]);
+        usePeripheralController = advertiseAlsPeriferal;
+
+        if (usePeripheralController)
+        {
+            peripheralController = [[CABTMIDILocalPeripheralViewController alloc] init];
+            nativeSelectorComponent.setView ([peripheralController view]);
+        }
+        else
+        {
+            centralController = [[CABTMIDICentralViewController alloc] init];
+            nativeSelectorComponent.setView ([centralController view]);
+        }
 
         addAndMakeVisible (nativeSelectorComponent);
 
@@ -71,19 +82,24 @@ public:
     ~BluetoothMidiSelectorOverlay() override
     {
         nativeSelectorComponent.setView (nullptr);
-        [controller release];
+        
+        if (usePeripheralController)
+            [peripheralController release];
+        else
+            [centralController release];
     }
 
     void paint (Graphics& g) override
     {
-        g.fillAll (bounds.isEmpty() ? Colours::black.withAlpha (0.5f) : Colours::black);
+//        g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId).withAlpha (0.7f));
+//        g.fillAll (Colours::black.withAlpha (0.25f));
     }
 
     void inputAttemptWhenModal() override           { close(); }
     void mouseDrag (const MouseEvent&) override     {}
     void mouseDown (const MouseEvent&) override     { close(); }
-    void resized() override                         { update(); }
-    void parentSizeChanged() override               { update(); }
+    void resized() override                         { close(); }
+    void parentSizeChanged() override               { close(); }
 
 private:
     void update()
@@ -112,7 +128,9 @@ private:
         setVisible (false);
     }
 
-    CABTMIDICentralViewController* controller;
+    bool usePeripheralController = false;
+    CABTMIDICentralViewController* centralController;
+    CABTMIDILocalPeripheralViewController* peripheralController;
     UIViewComponent nativeSelectorComponent;
     Rectangle<int> bounds;
     Component* kioskModeComponent;
@@ -121,14 +139,15 @@ private:
 };
 
 bool BluetoothMidiDevicePairingDialogue::open (ModalComponentManager::Callback* exitCallback,
-                                               Rectangle<int>* btBounds)
+                                               Rectangle<int>* btBounds,
+                                               bool advertiseAlsPeriferal)
 {
     std::unique_ptr<ModalComponentManager::Callback> cb (exitCallback);
     auto boundsToUse = (btBounds != nullptr ? *btBounds : Rectangle<int> {});
 
     if (isAvailable())
     {
-        new BluetoothMidiSelectorOverlay (cb.release(), boundsToUse);
+        new BluetoothMidiSelectorOverlay (cb.release(), boundsToUse, advertiseAlsPeriferal);
         return true;
     }
 

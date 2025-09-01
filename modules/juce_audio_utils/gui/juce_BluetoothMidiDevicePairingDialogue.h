@@ -69,7 +69,12 @@ public:
         @see ModalComponentManager::Callback
     */
     static bool open (ModalComponentManager::Callback* exitCallback = nullptr,
-                      Rectangle<int>* btWindowBounds = nullptr);
+                      Rectangle<int>* btWindowBounds = nullptr
+                      #if JUCE_IOS
+                      , bool advertiseAsPeriferal = false);
+                      #else
+                        );
+                      #endif
 
     /** Checks if a Bluetooth MIDI pairing dialogue is available on this
         platform.

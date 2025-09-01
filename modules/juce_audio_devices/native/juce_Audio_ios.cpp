@@ -378,9 +378,6 @@ struct iOSAudioIODevice::Pimpl final : public AsyncUpdater
         for (AVAudioSessionPortDescription* port in [AVAudioSession sharedInstance].currentRoute.outputs)
             if ([port.portType containsString: @"Bluetooth"])
                 bluetooth = true;
-        
-        if (! bluetooth && category == AVAudioSessionCategoryPlayAndRecord)
-            category = AVAudioSessionCategoryMultiRoute;
 
        #if ! JUCE_DISABLE_AUDIO_MIXING_WITH_OTHER_APPS
         options |= AVAudioSessionCategoryOptionMixWithOthers;

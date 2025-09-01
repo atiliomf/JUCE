@@ -757,6 +757,47 @@ private:
                      == getSampleRate (outputStream->getNativeStream()));
         }
 
+        void openStreams()
+        {
+            outputStream = std::make_unique<OboeStream> (outputDeviceId,
+                                                         oboe::Direction::Output,
+                                                         oboe::SharingMode::Exclusive,
+                                                         numOutputChannels,
+                                                         streamFormat,
+                                                         sampleRate,
+                                                         bufferSize,
+                                                         static_cast<AudioStreamCallback*> (this));
+
+            checkStreamSetup (outputStream.get(), outputDeviceId, numOutputChannels,
+                              sampleRate, bufferSize, streamFormat);
+
+            if (numInputChannels <= 0)
+                return;
+
+            inputStream = std::make_unique<OboeStream> (inputDeviceId,
+                                                        oboe::Direction::Input,
+                                                        oboe::SharingMode::Exclusive,
+                                                        numInputChannels,
+                                                        streamFormat,
+                                                        sampleRate,
+                                                        bufferSize,
+                                                        nullptr);
+
+            checkStreamSetup (inputStream.get(), inputDeviceId, numInputChannels,
+                              sampleRate, bufferSize, streamFormat);
+
+            if (! inputStream->openedOk() || ! outputStream->openedOk())
+                return;
+
+            const auto getSampleRate = [] (auto nativeStream)
+            {
+                return nativeStream != nullptr ? nativeStream->getSampleRate() : 0;
+            };
+            // Input & output sample rates should match!
+            jassert (getSampleRate (inputStream->getNativeStream())
+                     == getSampleRate (outputStream->getNativeStream()));
+        }
+
         OboeAudioIODevice& owner;
         int inputDeviceId, outputDeviceId;
         int numInputChannels, numOutputChannels;
@@ -803,8 +844,8 @@ private:
         void stop() override
         {
             const SpinLock::ScopedLockType lock { audioCallbackMutex };
-            
-            destroyStreams(); // previously: if (outputStream != nullptr) outputStream->stop();
+
+            destroyStreams();
         }
 
         int getOutputLatencyInSamples() override    { return outputLatency; }

@@ -244,7 +244,7 @@ private:
             const AndroidBluetoothMidiDevice& device = devices.getReference (rowNumber);
             const String statusString (getDeviceStatusString (device.connectionStatus));
 
-            g.fillAll (Colours::white);
+            g.fillAll (Colours::lime.withAlpha (0.08f));
 
             const float xmargin = 8.0f;
             const float ymargin = 3.0f;
@@ -449,9 +449,9 @@ public:
 
     void paint (Graphics& g) override
     {
-        g.fillAll (Colours::black.withAlpha (0.5f));
+//        g.fillAll (Colours::black.withAlpha (0.5f));
 
-        g.setColour (Colour (0xffdfdfdf));
+        g.setColour (Colours::white);
         Rectangle<int> overlayBounds = getOverlayBounds();
         g.fillRect (overlayBounds);
 

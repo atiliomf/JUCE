@@ -217,7 +217,7 @@ public:
     {
         setRowHeight (40);
         setModel (this);
-        setOutlineThickness (1);
+        setOutlineThickness (0);
         startTimer (timerPeriodInMs);
     }
 
@@ -465,7 +465,7 @@ public:
         overlayBounds.removeFromTop (2);
 
         g.setFont (17);
-        g.drawFittedText (TRANS ("Tap on a device on the list to connect/disconnect") + ". " +
+        g.drawFittedText (TRANS ("Tap on a device to connect/disconnect") + ". " +
                           TRANS ("Note: pairing with MacOS or Windows is not supported, please use OSC instead!"),
                     overlayBounds.removeFromTop (80).reduced (8, 5),
                     Justification::topLeft, 3);

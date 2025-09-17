@@ -1424,6 +1424,7 @@ private:
 //            const auto deviceName = (project.getCompanyNameString().isNotEmpty() ? (project.getCompanyNameString() + " ") : "")
 //                                  + projectName;
             device->setAttribute ("name", projectName); // deviceName
+
             return device;
         };
 

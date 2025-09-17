@@ -431,6 +431,7 @@ public:
         enabledOrientations = desktop.getOrientationsEnabled();
         desktop.setOrientationsEnabled (desktop.getCurrentOrientation());
         
+        // addToDesktop (ComponentPeer::windowHasDropShadow);
         desktop.getComponent(0)->getTopLevelComponent()->addChildComponent (this);
     
         toFront (true);

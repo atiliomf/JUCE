@@ -217,7 +217,8 @@ public:
     {
         setRowHeight (40);
         setModel (this);
-        setOutlineThickness (0);
+        setOutlineThickness (1);
+        setColour (ListBox::outlineColourId, Colours::grey);
         startTimer (timerPeriodInMs);
     }
 
@@ -450,23 +451,20 @@ public:
 
     void paint (Graphics& g) override
     {
-//        g.fillAll (Colours::black.withAlpha (0.5f));
-
         g.setColour (Colours::white);
         Rectangle<int> overlayBounds = getOverlayBounds();
         g.fillRect (overlayBounds);
 
         g.setColour (Colours::black);
-        g.setFont (20);
+        g.setFont (FontOptions (20, Font::bold));
         g.drawText (TRANS ("Bluetooth MIDI Devices"),
                     overlayBounds.removeFromTop (20).reduced (8, 5),
                     Justification::topLeft, true);
 
         overlayBounds.removeFromTop (2);
 
-        g.setFont (17);
-        g.drawFittedText (TRANS ("Tap on a device to connect/disconnect") + ". " +
-                          TRANS ("Note: pairing with MacOS or Windows is not supported, please use OSC instead!"),
+        g.setFont (18);
+        g.drawFittedText (TRANS ("Note: only musical instruments are supported. To connect with computers or mobile devices, please use OSC instead."),
                     overlayBounds.removeFromTop (80).reduced (8, 5),
                     Justification::topLeft, 3);
     }

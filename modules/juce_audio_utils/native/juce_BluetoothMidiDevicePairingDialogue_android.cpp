@@ -464,7 +464,7 @@ public:
         overlayBounds.removeFromTop (2);
 
         g.setFont (18);
-        g.drawFittedText (TRANS ("Note: only musical instruments are supported. To connect with computers or mobile devices, please use OSC instead."),
+        g.drawFittedText (TRANS ("Note: use this to connect to musical instruments. Please use OSC to connect to computers or mobile devices."),
                     overlayBounds.removeFromTop (80).reduced (8, 5),
                     Justification::topLeft, 3);
     }

@@ -101,23 +101,6 @@ private:
             addAndMakeVisible (rendererLabel);
             rendererLabel.setJustificationType (Justification::centredRight);
             rendererLabel.attachToComponent (&rendererSelector, true);
-            
-            addAndMakeVisible (kioskModeSelector);
-            kioskModeSelector.addItem ("Yes", 1);
-            kioskModeSelector.addItem ("No", 2);
-            kioskModeSelector.onChange = [this]
-            {
-                auto& desktop = Desktop::getInstance();
-                bool kioskModeOn = desktop.getKioskModeComponent() != nullptr;
-                Desktop::getInstance().setKioskModeComponent (kioskModeOn ? nullptr : getTopLevelComponent());
-                if (auto* p = getPeer()) p->setFullScreen (true);
-                kioskModeSelector.setSelectedId (kioskModeOn ? 2 : 1, dontSendNotification);
-            };
-            kioskModeSelector.setSelectedId (Desktop::getInstance().getKioskModeComponent() != nullptr ? 1 : 2, dontSendNotification);
-
-            addAndMakeVisible (kioskModeLabel);
-            kioskModeLabel.setJustificationType (Justification::centredRight);
-            kioskModeLabel.attachToComponent (&kioskModeSelector, true);            
 
             setFocusContainerType (FocusContainerType::focusContainer);
             setTitle ("Graphics Settings");
@@ -137,9 +120,6 @@ private:
             bounds.removeFromTop (itemSpacing);
 
             rendererSelector.setBounds (bounds.removeFromTop (itemHeight).withWidth (width).withX (xPos));
-            bounds.removeFromTop (itemSpacing);
-            
-            kioskModeSelector.setBounds (bounds.removeFromTop (itemHeight).withWidth (width).withX (xPos));
         }
 
     private:
@@ -190,10 +170,9 @@ private:
 
         Label titleLabel       { {}, "Graphics" },
               lookAndFeelLabel { {}, "LookAndFeel:" },
-              rendererLabel    { {}, "Renderer:" },
-              kioskModeLabel   { {}, "Kiosk mode:" };
+              rendererLabel    { {}, "Renderer:" };
 
-        ComboBox lookAndFeelSelector, rendererSelector, kioskModeSelector;
+        ComboBox lookAndFeelSelector, rendererSelector;
         StringArray lookAndFeelNames;
         OwnedArray<LookAndFeel> lookAndFeels;
     };

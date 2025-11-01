@@ -32,6 +32,7 @@
   ==============================================================================
 */
 
+/** @cond */
 namespace juce::universal_midi_packets
 {
 
@@ -910,3 +911,4 @@ struct Factory
 };
 
 } // namespace juce::universal_midi_packets
+/** @endcond */

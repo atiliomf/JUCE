@@ -6,7 +6,6 @@ on:
       - develop
       - bugfix/**
       - feature/**
-      - midi2
 jobs:
   juce-private-push-trigger:
     if: github.repository == 'juce-framework/JUCE-dev'

@@ -326,7 +326,6 @@ void Desktop::setKioskModeComponent (Component* componentToUse, bool allowMenusA
             jassert (ComponentPeer::getPeerFor (kioskModeComponent) != nullptr);
 
             kioskComponentOriginalBounds = kioskModeComponent->getBounds();
-            
             setKioskComponent (kioskModeComponent, true, allowMenusAndBars);
         }
     }

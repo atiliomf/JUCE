@@ -522,6 +522,8 @@ SynthesiserVoice* Synthesiser::findFreeVoice (SynthesiserSound* soundToPlay,
     return nullptr;
 }
 
+int steals = 0;
+
 SynthesiserVoice* Synthesiser::findVoiceToSteal (SynthesiserSound* soundToPlay,
                                                  int /*midiChannel*/, int midiNoteNumber) const
 {
@@ -542,37 +544,40 @@ SynthesiserVoice* Synthesiser::findVoiceToSteal (SynthesiserSound* soundToPlay,
     const ScopedLock sl (stealLock);
 
     // this is a list of voices we can steal, sorted by how long they've been running
-    usableVoicesToStealArray.clear();
+    usableVoicesToStealArray.clearQuick();
 
     for (auto* voice : voices)
     {
-        if (voice->canPlaySound (soundToPlay))
+        if (! voice->canPlaySound (soundToPlay))
+            continue;
+
+        jassert (voice->isVoiceActive());
+        usableVoicesToStealArray.add (voice);
+
+        if (! voice->isPlayingButReleased())
         {
-            jassert (voice->isVoiceActive()); // We wouldn't be here otherwise
+            const auto note = voice->getCurrentlyPlayingNote();
 
-            usableVoicesToStealArray.add (voice);
+            if (low == nullptr || note < low->getCurrentlyPlayingNote())
+                low = voice;
 
-            // NB: Using a functor rather than a lambda here due to scare-stories about
-            // compilers generating code containing heap allocations.
-            struct Sorter
-            {
-                bool operator() (const SynthesiserVoice* a, const SynthesiserVoice* b) const noexcept { return a->wasStartedBefore (*b); }
-            };
-
-            std::sort (usableVoicesToStealArray.begin(), usableVoicesToStealArray.end(), Sorter());
-
-            if (! voice->isPlayingButReleased()) // Don't protect released notes
-            {
-                auto note = voice->getCurrentlyPlayingNote();
-
-                if (low == nullptr || note < low->getCurrentlyPlayingNote())
-                    low = voice;
-
-                if (top == nullptr || note > top->getCurrentlyPlayingNote())
-                    top = voice;
-            }
+            if (top == nullptr || note > top->getCurrentlyPlayingNote())
+                top = voice;
         }
     }
+
+    struct Sorter
+    {
+        bool operator() (const SynthesiserVoice* a,
+                         const SynthesiserVoice* b) const noexcept
+        {
+            return a->wasStartedBefore (*b);
+        }
+    };
+
+    std::sort (usableVoicesToStealArray.begin(),
+               usableVoicesToStealArray.end(),
+               Sorter());
 
     // Eliminate pathological cases (ie: only 1 note playing): we always give precedence to the lowest note(s)
     if (top == low)

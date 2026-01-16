@@ -303,7 +303,7 @@ static std::vector<ShapedGlyph> lowLevelShape (const SanitisedString& string,
 {
     static const auto language = SystemStats::getDisplayLanguage();
 
-    HbBuffer buffer { hb_buffer_create(), IncrementRef::no };
+    HbBuffer buffer { hb_buffer_create() };
     hb_buffer_clear_contents (buffer.get());
 
     hb_buffer_set_cluster_level (buffer.get(), HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES);
@@ -399,14 +399,20 @@ static std::vector<ShapedGlyph> lowLevelShape (const SanitisedString& string,
         const auto xAdvanceBase = HbScale::hbToJuce (positions[visualIndex].x_advance);
         const auto yAdvanceBase = -HbScale::hbToJuce (positions[visualIndex].y_advance);
 
-        // For certain OS, Font and glyph ID combinations harfbuzz will not find extents data.
-        // In such cases Typeface::getGlyphBounds will return an empty rectangle. Here we need
-        // to distinguish this situation from the one where extents information is available
-        // and is an empty rectangle, which indicates a whitespace.
-        const auto* native = font.getTypefacePtr()->getNativeDetails();
-        const auto extents = native->getGlyphExtents (glyphId);
+        // For certain OS, Font and glyph ID combinations harfbuzz will not find extents data and
+        // hb_font_get_glyph_extents will return false. In such cases Typeface::getGlyphBounds
+        // will return an empty rectangle. Here we need to distinguish this situation from the one
+        // where extents information is available and is an empty rectangle, which indicates a
+        // whitespace.
+        const auto extentsDataAvailable = std::invoke ([&]
+        {
+            hb_glyph_extents_t extents{};
+            return hb_font_get_glyph_extents (font.getTypefacePtr()->getNativeDetails().getFont(),
+                                              (hb_codepoint_t) glyphId,
+                                              &extents);
+        });
 
-        const auto whitespace = extents.has_value()
+        const auto whitespace = extentsDataAvailable
                                 && font.getTypefacePtr()->getGlyphBounds (font.getMetricsKind(), (int) glyphId).isEmpty()
                                 && xAdvanceBase > 0;
 

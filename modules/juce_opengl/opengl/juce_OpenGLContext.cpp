@@ -468,7 +468,9 @@ public:
 
             const auto newArea = globalArea.withZeroOrigin() * displayScale;
            #else
-            const auto newArea = (globalArea.toFloat() * peer->getPlatformScaleFactor()).withZeroOrigin().toNearestInt();
+            const auto newArea = desktop.getDisplays()
+                                        .logicalToPhysical (globalArea)
+                                                       .withZeroOrigin();
            #endif
 
             // On Windows some hosts (Pro Tools 2022.7) do not take the current DPI into account

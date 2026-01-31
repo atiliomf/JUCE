@@ -273,7 +273,7 @@ public:
 
     Native getNativeDetails() const override
     {
-        return Native { hbFont.get(), nonPortableMetrics, this };
+        return native.get();
     }
 
     Typeface::Ptr createSystemFallback (const String& text, const String& language) const override
@@ -467,10 +467,9 @@ private:
                      const String& style,
                      GlobalRef javaFontIn)
         : Typeface (name, style),
-          hbFont (std::move (fontIn)),
           doCache (cache),
-          nonPortableMetrics (nonPortableMetricsIn),
-          javaFont (std::move (javaFontIn))
+          javaFont (std::move (javaFontIn)),
+          native (std::make_unique<Native> (TypefaceNativeOptions { fontIn, nonPortableMetricsIn, this }))
     {
         if (doCache == DoCache::yes)
             if (auto* c = MemoryFontCache::getInstance())

@@ -2016,14 +2016,11 @@ public:
 
     static void handlePaintCallback (JNIEnv* env, AndroidComponentPeer& t, jobject canvas, jobject paint)
     {
-        const auto [left, top, right, bottom] = std::invoke ([&]
-        {
-            LocalRef<jobject> rect { env->CallObjectMethod (canvas, AndroidCanvas.getClipBounds) };
-            return std::tuple (env->GetIntField (rect, AndroidRect.left),
-                               env->GetIntField (rect, AndroidRect.top),
-                               env->GetIntField (rect, AndroidRect.right),
-                               env->GetIntField (rect, AndroidRect.bottom));
-        });
+        LocalRef<jobject> rect { env->CallObjectMethod (canvas, AndroidCanvas.getClipBounds) };
+        auto left   = env->GetIntField (rect, AndroidRect.left);
+        auto top    = env->GetIntField (rect, AndroidRect.top);
+        auto right  = env->GetIntField (rect, AndroidRect.right);
+        auto bottom = env->GetIntField (rect, AndroidRect.bottom);
 
         auto clip = Rectangle<int>::leftTopRightBottom (left, top, right, bottom);
 
@@ -2501,7 +2498,6 @@ private:
 
         setSystemBarsTransparent();
     }
-
 
     void setSystemBarsTransparent()
     {

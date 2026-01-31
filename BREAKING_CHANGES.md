@@ -4,6 +4,75 @@
 
 ## Change
 
+A new type member ARAConfigurationType has been added to
+ARADemoPluginDocumentControllerSpecialisation.
+
+**Possible Issues**
+
+In the unlikely case than an ARA document controller implementation previously
+added an ARAConfigurationType member to
+ARADemoPluginDocumentControllerSpecialisation, the code will fail to compile.
+
+**Workaround**
+
+The previous ARAConfigurationType member must be renamed.
+ARADemoPluginDocumentControllerSpecialisation::ARAConfigurationType from now on
+must be a type that has a static member function
+`ARA::ARAAPIGeneration getHighestSupportedApiGeneration()`.
+
+**Rationale**
+
+Supporting the partial persistency feature of ARA 2.3.0 required the addition
+of the new type member.
+
+
+## Change
+
+The ARA SDK required by JUCE has been updated to version 2.3.0.
+
+**Possible Issues**
+
+ARA Plugin builds using earlier versions of the ARA SDK will fail to compile.
+Additionally, the new ARA SDK version replaces the ARA::ChannelArrangement type
+with ARA::ChannelFormat.
+
+**Workaround**
+
+The ARA SDK configured in JUCE must be updated to version 2.3.0. If the plugin
+code depended on the ARA::ChannelArrangement type, it must use
+ARA::ChannelFormat in its stead.
+
+**Rationale**
+
+Version 2.3.0 is the latest official release of the ARA SDK.
+
+
+# Version 8.0.11
+
+## Change
+
+var::equals(), var::operator==(), and var::operator!=() will now carry out a
+deep equality check when comparing two stored DynamicObjects, as opposed to
+just comparing the objects' addresses, which was the old behaviour.
+
+**Possible Issues**
+
+Program that depend on variants only comparing equal when the object pointers
+are equal will now exhibit unexpected behaviour.
+
+**Workaround**
+
+There is no workaround for this change.
+
+**Rationale**
+
+The previous behaviour was unintuitive, as it meant that two different var
+instances may compare unequal, even when those var instances were both created
+by parsing the same JSON string.
+
+
+## Change
+
 Enabling JUCE_ASIO will now default to using bundled ASIO sources.
 
 **Possible Issues**

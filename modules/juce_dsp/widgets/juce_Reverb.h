@@ -72,7 +72,7 @@ public:
         reverb.setSampleRate (spec.sampleRate);
     }
 
-    /** Resets the reverb's internal state (clears the reverb's buffers.)*/
+    /** Resets the reverb's internal state. */
     void reset() noexcept
     {
         reverb.reset();

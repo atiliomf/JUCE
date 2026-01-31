@@ -51,7 +51,7 @@
   license:            AGPLv3/Commercial
   minimumCppStandard: 17
 
-  dependencies:       juce_audio_basics, juce_events
+  dependencies:       juce_audio_basics juce_events
   OSXFrameworks:      CoreAudio CoreMIDI AudioToolbox
   iOSFrameworks:      AudioToolbox
 

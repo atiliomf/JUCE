@@ -57,7 +57,6 @@ class JUCE_API  ComboBox  : public Component,
                             private AsyncUpdater
 {
 public:
-	bool canReselectSameItem = false; 
     //==============================================================================
     /** Creates a combo-box.
 

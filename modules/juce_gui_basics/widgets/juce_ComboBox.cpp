@@ -270,7 +270,7 @@ void ComboBox::setSelectedId (const int newItemId, const NotificationType notifi
     auto* item = getItemForId (newItemId);
     auto newItemText = item != nullptr ? item->text : String();
 
-    if (canReselectSameItem || lastCurrentId != newItemId || label->getText() != newItemText)
+    if (lastCurrentId != newItemId || label->getText() != newItemText)
     {
         label->setText (newItemText, dontSendNotification);
         lastCurrentId = newItemId;

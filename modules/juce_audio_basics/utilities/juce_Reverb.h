@@ -80,6 +80,13 @@ public:
     */
     void setParameters (const Parameters& newParams)
     {
+        jassert (newParams.roomSize >= 0.0f && newParams.roomSize <= 1.0f);
+        jassert (newParams.damping >= 0.0f && newParams.damping <= 1.0f);
+        jassert (newParams.wetLevel >= 0.0f && newParams.wetLevel <= 1.0f);
+        jassert (newParams.dryLevel >= 0.0f && newParams.dryLevel <= 1.0f);
+        jassert (newParams.width >= 0.0f && newParams.width <= 1.0f);
+        jassert (newParams.freezeMode >= 0.0f && newParams.freezeMode <= 1.0f);
+    
         const float wetScaleFactor = 3.0f;
         const float dryScaleFactor = 2.0f;
 

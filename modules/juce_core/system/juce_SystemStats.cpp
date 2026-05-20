@@ -190,10 +190,7 @@ String SystemStats::getStackBacktrace()
 {
     String result;
 
-   #if JUCE_WASM
-    jassertfalse; // sorry, not implemented yet!
-
-   #elif JUCE_WINDOWS
+   #if JUCE_WINDOWS
     HANDLE process = GetCurrentProcess();
     SymInitialize (process, nullptr, TRUE);
 
@@ -223,91 +220,22 @@ String SystemStats::getStackBacktrace()
             result << symbol->Name << " + 0x" << String::toHexString ((int64) displacement) << newLine;
         }
     }
-    
-   #elif JUCE_ANDROID
-    struct AndroidBacktraceState
-    {
-        void** current;
-        void** end;
-    };
 
-    auto androidUnwindCallback = [] (_Unwind_Context* context, void* arg) -> _Unwind_Reason_Code
-    {
-        auto* state = (AndroidBacktraceState*) arg;
-        if (auto pc = _Unwind_GetIP(context))
-        {
-            if (state->current == state->end)
-                return _URC_END_OF_STACK;
+   #elif JUCE_MAC || JUCE_IOS || defined (__GLIBC__)
 
-            *state->current++ = reinterpret_cast<void*> (pc);
-        }
-
-        return _URC_NO_REASON;
-    };
-
-    const int max = 100;
-    void* buffer[max];
-
-    AndroidBacktraceState state;
-    state.current = buffer;
-    state.end = buffer + max;
-    _Unwind_Backtrace (androidUnwindCallback, &state);
-
-    const auto count = (int) (state.current - buffer);
-
-    for (int i = 0; i < count; ++i)
-    {
-        const void* addr = buffer[i];
-        result << i << " " << String::toHexString ((intptr_t) addr);
-
-        Dl_info info;
-        if (dladdr (addr, &info) != 0 && info.dli_sname != nullptr)
-        {
-            const char* symbol = info.dli_sname;
-
-            int status = 0; // NB: '0' means success
-            auto* demangled = abi::__cxa_demangle (symbol, nullptr, nullptr, &status);
-
-            if (demangled != nullptr && status == 0)
-                result << demangled;
-            else
-                result << symbol;
-
-            if (demangled != nullptr)
-                free (demangled);
-        }
-
-        result << newLine;
-    }
-
-   #else
     void* stack[128];
     auto frames = backtrace (stack, numElementsInArray (stack));
     char** frameStrings = backtrace_symbols (stack, frames);
-    
-    for (int i = 0; i < frames; ++i)
-    {
-        if (Dl_info info; dladdr (stack[i], &info))
-        {
-            int status;
-            std::unique_ptr<char, decltype (::free)*> demangled (abi::__cxa_demangle (info.dli_sname, nullptr, nullptr, &status), ::free);
-            
-            if (status == 0)
-            {
-                result
-                    << juce::String (i).paddedRight (' ', 3)
-                    << " " << juce::File (juce::String (info.dli_fname)).getFileName().paddedRight (' ', 35)
-                    << " 0x" << juce::String::toHexString ((size_t) stack[i]).paddedLeft ('0', sizeof (void*) * 2)
-                    << " " << demangled.get()
-                    << " + " << ((char*) stack[i] - (char*) info.dli_saddr) << newLine;
-                continue;
-            }
-        }
-        
+
+    for (auto i = (decltype (frames)) 0; i < frames; ++i)
         result << frameStrings[i] << newLine;
-    }
 
     ::free (frameStrings);
+
+   #else
+
+    jassertfalse; // sorry, not implemented yet!
+
    #endif
 
     return result;

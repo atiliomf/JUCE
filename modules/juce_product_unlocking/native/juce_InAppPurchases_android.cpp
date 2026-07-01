@@ -938,7 +938,7 @@ private:
     }
 
     //==============================================================================
-    static InAppPurchases::Purchase buildPurchase (LocalRef<jobject> purchase)
+    static Purchase buildPurchase (LocalRef<jobject> purchase)
     {
         if (purchase == nullptr)
             return {};

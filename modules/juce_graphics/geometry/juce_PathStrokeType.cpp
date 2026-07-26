@@ -749,7 +749,7 @@ void PathStrokeType::createDashedStroke (Path& destPath,
                 return;
             }
 
-            if (!firstIteration && (it.x1 != prevX || it.y1 != prevY))
+            if (!firstIteration && (approximatelyEqual (it.x1, prevX) || approximatelyEqual (it.y1, prevY)))
             {
                 dashNum = 0;
                 pos = 0.0f;

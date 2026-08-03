@@ -16,7 +16,7 @@
    framework to you, and you must discontinue the installation or download
    process and cease use of the JUCE framework.
 
-   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-9-licence/
    JUCE Privacy Policy: https://juce.com/juce-privacy-policy
    JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
@@ -1998,6 +1998,10 @@ private:
 
 //==============================================================================
 class VST3PluginInstanceHeadless : public AudioPluginInstance
+                                 , private AudioPluginExtensions::VST3Client
+                                #ifdef JUCE_INTERNAL_HAS_ARA
+                                 , private AudioPluginExtensions::ARAClient
+                                #endif
 {
 public:
     //==============================================================================
@@ -2225,40 +2229,23 @@ public:
         return true;
     }
 
-    void getExtensions (ExtensionsVisitor& visitor) const override
+          AudioPluginExtensions::VST3Client* getVST3Client()       override { return this; }
+    const AudioPluginExtensions::VST3Client* getVST3Client() const override { return this; }
+
+    Steinberg::Vst::IComponent* getIComponentPtr() const noexcept override
     {
-        struct Extensions final :  public ExtensionsVisitor::VST3Client,
-                                   public ExtensionsVisitor::ARAClient
-        {
-            explicit Extensions (const VST3PluginInstanceHeadless* instanceIn) : instance (instanceIn) {}
-
-            Vst::IComponent* getIComponentPtr() const noexcept override   { return instance->holder->component.get(); }
-
-            MemoryBlock getPreset() const override             { return instance->getStateForPresetFile(); }
-
-            bool setPreset (const MemoryBlock& rawData) const override
-            {
-                return instance->setStateFromPresetFile (rawData);
-            }
-
-            void createARAFactoryAsync (std::function<void (ARAFactoryWrapper)> cb) const noexcept override
-            {
-                cb (ARAFactoryWrapper { ::juce::getARAFactory (instance->holder->module) });
-            }
-
-            const VST3PluginInstanceHeadless* instance = nullptr;
-        };
-
-        Extensions extensions { this };
-        visitor.visitVST3Client (extensions);
-
-        if (::juce::getARAFactory (holder->module))
-        {
-            visitor.visitARAClient (extensions);
-        }
+        return holder->component.get();
     }
 
-    void* getPlatformSpecificData() override   { return holder->component.get(); }
+   #ifdef JUCE_INTERNAL_HAS_ARA
+          AudioPluginExtensions::ARAClient* getARAClient()       override { return this; }
+    const AudioPluginExtensions::ARAClient* getARAClient() const override { return this; }
+
+    void createARAFactoryAsync (std::function<void (ARAFactoryWrapper)> cb) const noexcept override
+    {
+        cb (ARAFactoryWrapper { ::juce::getARAFactory (holder->module) });
+    }
+   #endif
 
     void updateMidiMappings()
     {
@@ -2886,7 +2873,7 @@ public:
         }
     }
 
-    MemoryBlock getStateForPresetFile() const
+    MemoryBlock getPreset() const override
     {
         VSTComSmartPtr memoryStream { new MemoryStream(), IncrementRef::no };
 
@@ -2904,7 +2891,7 @@ public:
         return {};
     }
 
-    bool setStateFromPresetFile (const MemoryBlock& rawData) const
+    bool setPreset (const MemoryBlock& rawData) override
     {
         auto rawDataCopy = rawData;
         VSTComSmartPtr memoryStream { new MemoryStream (rawDataCopy.getData(), (int) rawDataCopy.getSize()),
@@ -3121,7 +3108,7 @@ private:
             cachedParamValues = CachedParamValues { std::move (allIds) };
         }
 
-        for (int i = 0; i < editController->getParameterCount(); ++i)
+        for (auto end = editController->getParameterCount(), i = 0; i < end; ++i)
         {
             auto* param = new VST3Parameter (*this, i);
             const auto paramInfo = param->getParameterInfo();

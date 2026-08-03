@@ -16,7 +16,7 @@
    framework to you, and you must discontinue the installation or download
    process and cease use of the JUCE framework.
 
-   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-9-licence/
    JUCE Privacy Policy: https://juce.com/juce-privacy-policy
    JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
@@ -239,6 +239,20 @@ public:
     /** Converts a screen area to a position relative to the top-left of this component. */
     Rectangle<float> globalToLocal (const Rectangle<float>& screenPosition);
 
+    /** Converts the argument, in local peer coordinates, to a continuous coordinate space
+        suitable for positioning windows consistently in multimonitor setups.
+
+        @see multimonitorToLocal()
+    */
+    virtual Point<float> localToMultimonitor (Point<float> x) { return localToGlobal (x); }
+
+    /** Converts the argument, in a continuous coordinate space suitable for positioning windows
+        consistently in multimonitor setups, to local peer coordinates.
+
+        @see localToMultimonitor()
+    */
+    virtual Point<float> multimonitorToLocal (Point<float> x) { return globalToLocal (x); }
+
     /** Returns the area in peer coordinates that is covered by the given sub-comp (which
         may be at any depth)
     */
@@ -412,6 +426,8 @@ public:
 
         You shouldn't ever really need to use this, it's mainly for special purposes
         like supporting audio plugins where the host's event loop is out of our control.
+
+        This has no effect on Android and iOS where the OS schedules all window painting.
     */
     virtual void performAnyPendingRepaintsNow() = 0;
 
@@ -603,6 +619,70 @@ public:
     */
     uint64_t getNumFramesPainted() const { return peerFrameNumber; }
 
+    auto setMultimonitorPositionOverride (Point<int> pendingPosition)
+    {
+        struct Disabler
+        {
+            Disabler() = default;
+            Disabler (Component* x, Point<int> next)
+                : self (x)
+            {
+                if (auto* peer = getPeer())
+                    previous = std::exchange (peer->multimonitorPositionOverride, next);
+            }
+
+            Disabler (Disabler&& other) noexcept
+                : self (std::exchange (other.self, {})),
+                  previous (std::exchange (other.previous, {}))
+            {
+            }
+
+            Disabler (const Disabler& other) = delete;
+
+            Disabler& operator= (Disabler&& other) noexcept
+            {
+                Disabler { std::move (other) }.swap (*this);
+                return *this;
+            }
+
+            Disabler& operator= (const Disabler& other) = delete;
+
+            ~Disabler()
+            {
+                if (auto* peer = getPeer())
+                    peer->multimonitorPositionOverride = previous;
+            }
+
+            void swap (Disabler& other) noexcept
+            {
+                std::swap (other.self, self);
+                std::swap (other.previous, previous);
+            }
+
+            ComponentPeer* getPeer() const
+            {
+                if (self != nullptr)
+                    return self->getPeer();
+
+                return nullptr;
+            }
+
+            WeakReference<Component> self;
+            std::optional<Point<int>> previous;
+        };
+
+        return Disabler { &component, pendingPosition };
+    }
+
+    /** @internal */
+    auto getMultimonitorPositionOverride() const { return multimonitorPositionOverride; }
+
+    /** @internal */
+    virtual void setWindowsCanUseMultiTouch (bool) {}
+
+    /** @internal */
+    virtual bool canWindowsUseMultiTouch() const noexcept { return false; }
+
 protected:
     //==============================================================================
     static void forceDisplayUpdate();
@@ -646,6 +726,7 @@ private:
     Component* lastDragAndDropCompUnderMouse = nullptr;
     TextInputTarget* textInputTarget = nullptr;
     const uint32 uniqueID;
+    std::optional<Point<int>> multimonitorPositionOverride;
     uint64_t peerFrameNumber = 0;
     bool isWindowMinimised = false;
 

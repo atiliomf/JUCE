@@ -16,7 +16,7 @@
    framework to you, and you must discontinue the installation or download
    process and cease use of the JUCE framework.
 
-   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-9-licence/
    JUCE Privacy Policy: https://juce.com/juce-privacy-policy
    JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
@@ -86,7 +86,7 @@ public:
         swapChainDescription.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapChainDescription.BufferCount = 2;
         swapChainDescription.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-        swapChainDescription.Flags = 0;
+        swapChainDescription.Flags = swapChainFlags;
 
         swapChainDescription.Scaling = DXGI_SCALING_STRETCH;
         swapChainDescription.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
@@ -132,8 +132,15 @@ public:
 
         buffer = nullptr;
 
-        if (const auto hr = chain->ResizeBuffers (0, (UINT) scaledSize.getWidth(), (UINT) scaledSize.getHeight(), DXGI_FORMAT_B8G8R8A8_UNORM, 0); FAILED (hr))
+        if (const auto hr = chain->ResizeBuffers (0,
+                                                  (UINT) scaledSize.getWidth(),
+                                                  (UINT) scaledSize.getHeight(),
+                                                  DXGI_FORMAT_B8G8R8A8_UNORM,
+                                                  swapChainFlags);
+            FAILED (hr))
+        {
             return hr;
+        }
 
         ComSmartPtr<IDXGIDevice> device;
         JUCE_BEGIN_IGNORE_WARNINGS_GCC_LIKE ("-Wlanguage-extension-token")
@@ -169,6 +176,7 @@ public:
         return buffer;
     }
 
+    static constexpr uint32 swapChainFlags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
     static constexpr uint32 presentSyncInterval = 1;
     static constexpr uint32 presentFlags = 0;
 
@@ -294,9 +302,6 @@ private:
     // Areas that must be repainted during the next paint call, between startFrame/endFrame
     RectangleList<int> deferredRepaints;
 
-    // Areas that have been updated in the backbuffer, but not presented
-    RectangleList<int> dirtyRegionsInBackBuffer;
-
     std::vector<RECT> dirtyRectangles;
     int64 lastFinishFrameTicks = 0;
 
@@ -409,6 +414,20 @@ public:
         return swap.getBuffer();
     }
 
+    ComSmartPtr<IDWriteRenderingParams> getDefaultTextRenderingParams() const override
+    {
+        if (auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONULL))
+        {
+            ComSmartPtr<IDWriteRenderingParams> result;
+            getDirectWriteFactory()->CreateMonitorRenderingParams (monitor, result.resetAndGetPointerAddress());
+
+            if (result != nullptr)
+                return result;
+        }
+
+        return Pimpl::getDefaultTextRenderingParams();
+    }
+
     void setSize (Rectangle<int> size)
     {
         if (size == swap.getSize() || size.isEmpty())
@@ -416,9 +435,6 @@ public:
 
         // Require the entire window to be repainted
         deferredRepaints = size;
-
-        // The backbuffer has no valid content until we paint a full frame
-        dirtyRegionsInBackBuffer.clear();
 
         InvalidateRect (hwnd, nullptr, TRUE);
 
@@ -447,12 +463,6 @@ public:
         if (savedState == nullptr)
             return nullptr;
 
-        // If a new frame is starting, clear deferredAreas in case repaint is called
-        // while the frame is being painted to ensure the new areas are painted on the
-        // next frame
-        dirtyRegionsInBackBuffer.add (deferredRepaints);
-        deferredRepaints.clear();
-
         JUCE_TRACE_LOG_D2D_PAINT_CALL (etw::direct2dHwndPaintStart, getFrameId());
 
         return savedState;
@@ -470,22 +480,22 @@ public:
     {
         JUCE_D2DMETRICS_SCOPED_ELAPSED_TIME (getMetrics(), present1Duration);
 
-        if (swap.getBuffer() == nullptr || dirtyRegionsInBackBuffer.isEmpty())
+        if (swap.getBuffer() == nullptr || deferredRepaints.isEmpty())
             return;
 
         auto const swapChainSize = swap.getSize();
         DXGI_PRESENT_PARAMETERS params{};
 
-        if (! dirtyRegionsInBackBuffer.containsRectangle (swapChainSize))
+        if (! deferredRepaints.containsRectangle (swapChainSize))
         {
             // Allocate enough memory for the array of dirty rectangles
-            dirtyRectangles.resize ((size_t) dirtyRegionsInBackBuffer.getNumRectangles());
+            dirtyRectangles.resize ((size_t) deferredRepaints.getNumRectangles());
 
             // Fill the array of dirty rectangles, intersecting each paint area with the swap chain buffer
             params.pDirtyRects = dirtyRectangles.data();
             params.DirtyRectsCount = 0;
 
-            for (const auto& area : dirtyRegionsInBackBuffer)
+            for (const auto& area : deferredRepaints)
             {
                 const auto intersection = area.getIntersection (swapChainSize);
 
@@ -504,7 +514,7 @@ public:
             return;
 
         // There's nothing waiting to be displayed in the backbuffer.
-        dirtyRegionsInBackBuffer.clear();
+        deferredRepaints.clear();
 
         JUCE_TRACE_LOG_D2D_PAINT_CALL (etw::direct2dHwndPaintEnd, getFrameId());
     }

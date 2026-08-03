@@ -16,7 +16,7 @@
    framework to you, and you must discontinue the installation or download
    process and cease use of the JUCE framework.
 
-   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-9-licence/
    JUCE Privacy Policy: https://juce.com/juce-privacy-policy
    JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
@@ -601,10 +601,9 @@ var& var::operator= (ReferenceCountedObject* v)  { var v2 (v); swapWith (v2); re
 var& var::operator= (NativeFunction v)           { var v2 (v); swapWith (v2); return *this; }
 
 var::var (var&& other) noexcept
-    : type (other.type),
-      value (other.value)
+    : type (std::exchange (other.type, &Instance::attributesVoid)),
+      value (std::exchange (other.value, {}))
 {
-    other.type = &Instance::attributesVoid;
 }
 
 var& var::operator= (var&& other) noexcept
@@ -637,6 +636,38 @@ var& var::operator= (String&& v)
 }
 
 //==============================================================================
+Span<var> var::getArrayElements() &
+{
+    if (auto* array = getArray())
+        return Span { array->getRawDataPointer(), (size_t) array->size() };
+
+    return {};
+}
+
+Span<const var> var::getArrayElements() const&
+{
+    if (auto* array = getArray())
+        return Span { array->getRawDataPointer(), (size_t) array->size() };
+
+    return {};
+}
+
+Span<NamedValue> var::getObjectElements() &
+{
+    if (auto* obj = getDynamicObject())
+        return obj->getProperties().asSpan();
+
+    return {};
+}
+
+Span<const NamedValue> var::getObjectElements() const&
+{
+    if (auto* obj = getDynamicObject())
+        return obj->getProperties().asSpan();
+
+    return {};
+}
+
 bool var::equals (const var& other) const noexcept
 {
     return type->equals (value, other.value, *other.type);
